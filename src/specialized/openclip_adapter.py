@@ -1,10 +1,10 @@
 from pathlib import Path
 from typing import List
 
-import cv2
 import torch
 
 from src.utils.industrial import require_package
+from src.utils.third_party import import_open_clip, OPENCLIP_LOCAL_SRC
 
 
 def load_openclip_model(model_name: str, pretrained: str, device, checkpoint_path: str = ""):
@@ -19,8 +19,10 @@ def load_openclip_model(model_name: str, pretrained: str, device, checkpoint_pat
     Returns:
         返回 ``model``、``preprocess`` 和 ``tokenizer``，用于训练或零样本推理。
     """
-    require_package("open_clip", "pip install open_clip_torch")
-    import open_clip
+    if not OPENCLIP_LOCAL_SRC.exists():
+        require_package("open_clip", "pip install open_clip_torch")
+    open_clip = import_open_clip()
+    print(f"[INFO] OpenCLIP module: {getattr(open_clip, '__file__', 'unknown')}")
 
     local_ckpt = str(checkpoint_path or "").strip()
     if local_ckpt:
