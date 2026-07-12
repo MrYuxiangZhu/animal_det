@@ -5,17 +5,18 @@ project:
   log_dir: logs
 
 data:
-  root: data/animal_detection
-  train_images: images/train
-  val_images: images/val
-  train_labels: labels/train
-  val_labels: labels/val
-  class_names: [cat, dog, horse, cow, sheep, elephant, bear, zebra, giraffe]
+  dataset_name: animals10
+  root: data/coco_animals/detection
+  train_images: train/images
+  val_images: val/images
+  train_labels: train/labels
+  val_labels: val/labels
+  class_names: [dog, horse, elephant, butterfly, chicken, cat, cow, sheep, spider, squirrel]
   image_size: 416
   num_workers: 4
 
 model:
-  num_classes: 9
+  num_classes: 10
   width_mult: 0.75
   num_anchors: 3
   anchors:
@@ -34,7 +35,7 @@ train:
   loss_curve: outputs/loss_curve.png
 
 clip:
-  data_root: data/animal_classification
+  data_root: data/animals10/recognition
   image_size: 224
   context_length: 32
   embed_dim: 256
@@ -63,7 +64,7 @@ yolov5:
   run_name: animal_yolov5
 
 timm:
-  data_root: data/animal_classification
+  data_root: data/animals10/recognition
   model_name: vit_base_patch16_224
   pretrained: true
   image_size: 224
@@ -79,10 +80,10 @@ mmdetection:
   run_name: animal_mmdet
 
 detectron2:
-  train_json: data/animal_coco/annotations/instances_train.json
-  val_json: data/animal_coco/annotations/instances_val.json
-  train_images: data/animal_coco/train
-  val_images: data/animal_coco/val
+  train_json: data/coco_animals/coco/annotations/instances_train.json
+  val_json: data/coco_animals/coco/annotations/instances_val.json
+  train_images: data/coco_animals/coco/train
+  val_images: data/coco_animals/coco/val
   model_zoo_config: COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml
   pretrained: true
   checkpoint: outputs/detectron2/animal_detectron2/model_final.pth
@@ -93,15 +94,16 @@ detectron2:
   run_name: animal_detectron2
 
 openclip:
-  data_root: data/animal_classification
+  data_root: data/animals10/recognition
   model_name: ViT-B-32
-  pretrained: laion2b_s34b_b79k
+  pretrained: ""
   checkpoint_path: weights/openclip/open_clip_model.safetensors
   prompt_template: "a photo of a {name}, a wild animal"
   topk: 5
   freeze_encoder: true
   epochs: 20
   batch_size: 16
+  num_workers: 0
   learning_rate: 0.001
   loss_curve: outputs/openclip_loss_curve.png
 

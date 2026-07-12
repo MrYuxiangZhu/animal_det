@@ -16,11 +16,11 @@ class SimpleTokenizer:
         
         所属类: ``SimpleTokenizer``。
         
-        Args:
-            context_length: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            context_length: context_length 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         vocab_chars = list("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -_.,:/")
         self.stoi = {ch: idx + 2 for idx, ch in enumerate(vocab_chars)}
@@ -34,11 +34,11 @@ class SimpleTokenizer:
         
         所属类: ``SimpleTokenizer``。
         
-        Args:
-            texts: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            texts: texts 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         tokens = torch.full((len(texts), self.context_length), self.pad_id, dtype=torch.long)
         for i, text in enumerate(texts):
@@ -56,23 +56,23 @@ class VisionEncoder(nn.Module):
         
         所属类: ``VisionEncoder``。
         
-        Args:
-            embed_dim: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            width_mult: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            embed_dim: OpenCLIP 图像特征维度，用于构建线性分类头输入层。
+            width_mult: width_mult 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         super().__init__()
 
         def c(channels: int) -> int:
             """封装该模块中的一个可复用业务步骤，供训练、推理或工具流程调用。
             
-            Args:
-                channels: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+                channels: channels 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
             
-            Returns:
-                该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+            Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+                函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
             """
             return max(8, int(channels * width_mult))
 
@@ -92,11 +92,11 @@ class VisionEncoder(nn.Module):
         
         所属类: ``VisionEncoder``。
         
-        Args:
-            images: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            images: 输入图像张量批次，形状通常为 [B, C, H, W]。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         feats = self.net(images).flatten(1)
         return F.normalize(self.proj(feats), dim=-1)
@@ -110,16 +110,16 @@ class TextEncoder(nn.Module):
         
         所属类: ``TextEncoder``。
         
-        Args:
-            vocab_size: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            context_length: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            embed_dim: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            width: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            layers: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            heads: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            vocab_size: vocab_size 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            context_length: context_length 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            embed_dim: OpenCLIP 图像特征维度，用于构建线性分类头输入层。
+            width: width 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            layers: layers 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            heads: heads 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         super().__init__()
         self.context_length = context_length
@@ -136,11 +136,11 @@ class TextEncoder(nn.Module):
         
         所属类: ``TextEncoder``。
         
-        Args:
-            tokens: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            tokens: tokens 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         mask = tokens.eq(0)
         x = self.token_embedding(tokens) + self.pos_embedding.unsqueeze(0)
@@ -158,14 +158,14 @@ class MiniCLIP(nn.Module):
         
         所属类: ``MiniCLIP``。
         
-        Args:
-            vocab_size: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            context_length: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            embed_dim: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            width_mult: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            vocab_size: vocab_size 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            context_length: context_length 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            embed_dim: OpenCLIP 图像特征维度，用于构建线性分类头输入层。
+            width_mult: width_mult 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         super().__init__()
         self.visual = VisionEncoder(embed_dim=embed_dim, width_mult=width_mult)
@@ -177,11 +177,11 @@ class MiniCLIP(nn.Module):
         
         所属类: ``MiniCLIP``。
         
-        Args:
-            images: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            images: 输入图像张量批次，形状通常为 [B, C, H, W]。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         return self.visual(images)
 
@@ -190,11 +190,11 @@ class MiniCLIP(nn.Module):
         
         所属类: ``MiniCLIP``。
         
-        Args:
-            tokens: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            tokens: tokens 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         return self.text(tokens)
 
@@ -203,12 +203,12 @@ class MiniCLIP(nn.Module):
         
         所属类: ``MiniCLIP``。
         
-        Args:
-            images: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            tokens: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            images: 输入图像张量批次，形状通常为 [B, C, H, W]。
+            tokens: tokens 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         image_features = self.encode_image(images)
         text_features = self.encode_text(tokens)
@@ -222,11 +222,11 @@ def clip_contrastive_loss(logits_per_image: torch.Tensor, logits_per_text: torch
     """封装该模块中的一个可复用业务步骤，供训练、推理或工具流程调用。
     
     Args:
-        logits_per_image: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        logits_per_text: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        logits_per_image: logits_per_image 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+        logits_per_text: logits_per_text 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
     
     Returns:
-        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
     """
     labels = torch.arange(logits_per_image.shape[0], device=logits_per_image.device)
     loss_i = F.cross_entropy(logits_per_image, labels)

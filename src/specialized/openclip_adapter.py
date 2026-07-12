@@ -11,10 +11,10 @@ def load_openclip_model(model_name: str, pretrained: str, device, checkpoint_pat
     """加载 OpenCLIP 模型，支持在线预训练标签和离线本地权重。
     
     Args:
-        model_name: OpenCLIP 模型结构名称，例如 ``ViT-B-32``。
-        pretrained: 在线权重标签；当 ``checkpoint_path`` 不为空时可设为 ``""`` 或 ``null``。
-        device: 模型加载设备，例如 ``cuda`` 或 ``cpu``。
-        checkpoint_path: 离线下载好的权重路径，支持 ``.safetensors`` / ``.pt`` / ``.bin``。
+        model_name: 模型结构名称，例如 ViT-B-32、resnet50 或第三方框架配置中的网络名。
+        pretrained: 预训练权重标签；为空时不联网下载，通常配合本地 checkpoint_path 使用。
+        device: torch 运行设备，例如 cuda、cuda:0 或 cpu。
+        checkpoint_path: 本地权重文件路径，支持 safetensors、pt 或 bin 等格式。
     
     Returns:
         返回 ``model``、``preprocess`` 和 ``tokenizer``，用于训练或零样本推理。
@@ -45,8 +45,8 @@ def _load_openclip_state_dict(checkpoint_path: str, device):
     """读取离线 OpenCLIP 权重文件并规范化为 ``state_dict``。
     
     Args:
-        checkpoint_path: 本地权重文件路径。
-        device: 权重映射设备。
+        checkpoint_path: 本地权重文件路径，支持 safetensors、pt 或 bin 等格式。
+        device: torch 运行设备，例如 cuda、cuda:0 或 cpu。
     
     Returns:
         可直接传给 ``model.load_state_dict`` 的参数字典。
@@ -78,13 +78,13 @@ def classify_image(source: str, class_names: List[str], cfg, device):
     """执行单次推理或分类逻辑，输出结构化预测结果。
     
     Args:
-        source: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        class_names: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        cfg: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        device: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        source: 输入图片、视频、目录或数据源路径，由推理入口传入。
+        class_names: 类别名称列表；列表顺序就是训练标签 ID 和推理类别 ID 的映射关系。
+        cfg: 已解析的 YAML 配置字典，包含 project/data/model/train/infer 等运行参数。
+        device: torch 运行设备，例如 cuda、cuda:0 或 cpu。
     
     Returns:
-        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
     """
     from PIL import Image
 
@@ -108,12 +108,12 @@ def write_topk(result, output: str, topk: int) -> None:
     """将运行结果、配置或中间产物写入磁盘，便于复用和排查问题。
     
     Args:
-        result: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        output: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        topk: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        result: 模型推理结果列表，通常包含类别名和置信度。
+        output: 推理结果输出路径，可以是图片、视频、文本或 JSON 文件。
+        topk: 输出排名最高的类别数量。
     
     Returns:
-        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
     """
     Path(output).parent.mkdir(parents=True, exist_ok=True)
     lines = [f"{name}: {score:.4f}" for name, score in result[:topk]]

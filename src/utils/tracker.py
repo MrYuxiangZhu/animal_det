@@ -3,23 +3,25 @@ import json
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional
 
+from src.utils.logger import get_run_log_dir
+
 
 class MetricTracker:
     """统一指标追踪器，同时写入 JSONL 和 CSV，便于训练曲线分析。"""
 
     def __init__(self, log_dir: str, name: str) -> None:
-        """初始化对象，保存后续训练、推理或数据处理所需的配置和状态。
+        """初始化指标跟踪器，并把输出绑定到当前运行日志目录。
         
         所属类: ``MetricTracker``。
         
-        Args:
-            log_dir: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            name: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            log_dir: 日志根目录；运行时会在其中创建日期时间命名的子目录。
+            name: 任务或 logger 名称，用于生成日志文件名和运行子目录名。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            无返回值；会创建 ``*_metrics.jsonl`` 和 ``*_metrics.csv`` 的输出路径。
         """
-        self.log_dir = Path(log_dir)
+        self.log_dir = get_run_log_dir(name, log_dir)
         self.log_dir.mkdir(parents=True, exist_ok=True)
         self.jsonl_path = self.log_dir / f"{name}_metrics.jsonl"
         self.csv_path = self.log_dir / f"{name}_metrics.csv"
@@ -30,11 +32,11 @@ class MetricTracker:
         
         所属类: ``MetricTracker``。
         
-        Args:
-            payload: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            payload: 待写入指标日志的一行字典，包含 epoch、phase、loss、acc 等字段。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         row = dict(payload)
         with self.jsonl_path.open("a", encoding="utf-8") as f:
@@ -56,18 +58,18 @@ class InferenceTracker:
     fieldnames = ["source", "frame_idx", "det_id", "class_id", "class_name", "score", "x1", "y1", "x2", "y2"]
 
     def __init__(self, log_dir: str, name: str) -> None:
-        """初始化对象，保存后续训练、推理或数据处理所需的配置和状态。
+        """初始化推理跟踪器，并把检测结果写入当前运行日志目录。
         
         所属类: ``InferenceTracker``。
         
-        Args:
-            log_dir: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            name: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            log_dir: 日志根目录；运行时会在其中创建日期时间命名的子目录。
+            name: 任务或 logger 名称，用于生成日志文件名和运行子目录名。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            无返回值；会创建 ``*_detections.jsonl`` 和 ``*_detections.csv`` 的输出路径。
         """
-        self.log_dir = Path(log_dir)
+        self.log_dir = get_run_log_dir(name, log_dir)
         self.log_dir.mkdir(parents=True, exist_ok=True)
         self.jsonl_path = self.log_dir / f"{name}_detections.jsonl"
         self.csv_path = self.log_dir / f"{name}_detections.csv"
@@ -81,14 +83,14 @@ class InferenceTracker:
         
         所属类: ``InferenceTracker``。
         
-        Args:
-            source: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            frame_idx: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            detections: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            class_names: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            source: 输入图片、视频、目录或数据源路径，由推理入口传入。
+            frame_idx: 视频帧编号，从 0 开始，用于追踪每帧检测结果。
+            detections: 检测结果列表，每项通常为 box、score、class_id。
+            class_names: 类别名称列表；列表顺序就是训练标签 ID 和推理类别 ID 的映射关系。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         rows = []
         for det_id, (box, score, cls_id) in enumerate(detections):
@@ -119,8 +121,8 @@ class InferenceTracker:
         
         所属类: ``InferenceTracker``。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         return {
             "total_frames": self.total_frames,

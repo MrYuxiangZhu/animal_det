@@ -61,10 +61,10 @@ pip install -r third_party/yolov5/requirements.txt
 `timm` 用于动物分类迁移学习，不是目标检测。数据需要按类别文件夹组织：
 
 ```text
-data/animal_classification/train/cat/*.jpg
-data/animal_classification/train/dog/*.jpg
-data/animal_classification/val/cat/*.jpg
-data/animal_classification/val/dog/*.jpg
+data/animals10/recognition/train/cat/*.jpg
+data/animals10/recognition/train/dog/*.jpg
+data/animals10/recognition/val/cat/*.jpg
+data/animals10/recognition/val/dog/*.jpg
 ```
 
 训练：
@@ -117,10 +117,10 @@ Detectron2 当前适配器使用 COCO 格式数据。
 目录示例：
 
 ```text
-data/animal_coco/annotations/instances_train.json
-data/animal_coco/annotations/instances_val.json
-data/animal_coco/train/*.jpg
-data/animal_coco/val/*.jpg
+data/coco_animals/coco/annotations/instances_train.json
+data/coco_animals/coco/annotations/instances_val.json
+data/coco_animals/coco/train/*.jpg
+data/coco_animals/coco/val/*.jpg
 ```
 
 安装请参考官方文档：

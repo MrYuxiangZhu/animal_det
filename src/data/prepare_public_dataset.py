@@ -24,10 +24,10 @@ def iter_yolo_labels(label_path: Path) -> Iterable[List[float]]:
     """封装该模块中的一个可复用业务步骤，供训练、推理或工具流程调用。
     
     Args:
-        label_path: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        label_path: 文件路径参数，函数会读取该文件或将结果写入该位置。
     
     Returns:
-        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
     """
     if not label_path.exists():
         return []
@@ -65,7 +65,7 @@ def main() -> None:
     """命令行入口函数，解析参数、加载配置并调度对应的训练或推理流程。
     
     Returns:
-        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
     """
     parser = argparse.ArgumentParser(description="Prepare public animal dataset already converted to YOLO format")
     parser.add_argument("--source-root", required=True, help="包含 images/ 和 labels/ 的公开数据集目录")

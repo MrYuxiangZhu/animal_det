@@ -8,18 +8,18 @@ def run_detection_epoch(model, loader, criterion, optimizer, device, train: bool
     """执行一个完整流程步骤，通常包含训练、验证、推理或外部框架调用。
     
     Args:
-        model: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        loader: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        criterion: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        optimizer: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        device: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        train: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        tracker: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        epoch: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        phase: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        model: 待训练或待推理的 PyTorch 模型实例。
+        loader: PyTorch DataLoader，负责按 batch 提供训练或验证数据。
+        criterion: 损失函数对象，用于根据模型输出和标签计算训练损失。
+        optimizer: 优化器对象，训练阶段用于清梯度、反向传播后更新参数。
+        device: torch 运行设备，例如 cuda、cuda:0 或 cpu。
+        train: 布尔值；为 True 时启用训练模式和反向传播，为 False 时执行验证/评估。
+        tracker: 指标或推理跟踪器，用于写入 jsonl/csv 结构化日志。
+        epoch: 当前训练轮次，从 1 开始记录，用于日志、曲线和 checkpoint 命名。
+        phase: 阶段名称，例如 train、val 或 epoch，用于日志和指标区分。
     
     Returns:
-        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
     """
     model.train(train)
     sums = {"total": 0.0, "box": 0.0, "obj": 0.0, "cls": 0.0}
@@ -47,17 +47,17 @@ def save_detection_checkpoint(ckpt_dir, epoch, model, optimizer, best_val, cfg, 
     """将运行结果、配置或中间产物写入磁盘，便于复用和排查问题。
     
     Args:
-        ckpt_dir: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        epoch: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        model: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        optimizer: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        best_val: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        cfg: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        is_best: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        checkpoint_interval: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        ckpt_dir: 目录路径参数，函数会在该目录下查找输入或保存输出。
+        epoch: 当前训练轮次，从 1 开始记录，用于日志、曲线和 checkpoint 命名。
+        model: 待训练或待推理的 PyTorch 模型实例。
+        optimizer: 优化器对象，训练阶段用于清梯度、反向传播后更新参数。
+        best_val: best_val 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+        cfg: 已解析的 YAML 配置字典，包含 project/data/model/train/infer 等运行参数。
+        is_best: is_best 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+        checkpoint_interval: checkpoint_interval 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
     
     Returns:
-        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
     """
     ckpt = {"epoch": epoch, "model": model.state_dict(), "optimizer": optimizer.state_dict(), "best_val": best_val, "config": cfg}
     if epoch % checkpoint_interval == 0:

@@ -22,15 +22,15 @@ class AnimalClassificationDataset(Dataset):
         
         所属类: ``AnimalClassificationDataset``。
         
-        Args:
-            root: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            split: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            class_names: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            image_size: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            transform: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            root: 数据集根目录路径；检测任务指向 detection 目录，识别任务指向 recognition 目录。
+            split: 数据划分名称，通常为 train、val 或 test，用于选择对应子目录。
+            class_names: 类别名称列表；列表顺序就是训练标签 ID 和推理类别 ID 的映射关系。
+            image_size: 模型输入图像尺寸，图片会缩放或 letterbox 到该大小。
+            transform: transform 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         self.root = Path(root) / split
         self.class_names = class_names
@@ -54,8 +54,8 @@ class AnimalClassificationDataset(Dataset):
         
         所属类: ``AnimalClassificationDataset``。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         return len(self.samples)
 
@@ -64,11 +64,11 @@ class AnimalClassificationDataset(Dataset):
         
         所属类: ``AnimalClassificationDataset``。
         
-        Args:
-            idx: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            idx: 样本索引，由 PyTorch DataLoader 传入，用于读取指定图片和标签。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         path, label = self.samples[idx]
         image = cv2.imread(str(path))

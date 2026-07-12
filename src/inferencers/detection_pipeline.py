@@ -11,14 +11,14 @@ def run_image_or_video(source: str, output: str, infer_frame: Callable, logger, 
     """执行一个完整流程步骤，通常包含训练、验证、推理或外部框架调用。
     
     Args:
-        source: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        output: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        infer_frame: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        logger: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        progress_interval: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        source: 输入图片、视频、目录或数据源路径，由推理入口传入。
+        output: 推理结果输出路径，可以是图片、视频、文本或 JSON 文件。
+        infer_frame: infer_frame 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+        logger: logger 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+        progress_interval: progress_interval 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
     
     Returns:
-        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
     """
     Path(output).parent.mkdir(parents=True, exist_ok=True)
     suffix = Path(source).suffix.lower()

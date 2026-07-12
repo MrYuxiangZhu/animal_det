@@ -15,12 +15,12 @@ def load_grounding_model(cfg, device, class_names):
     """加载模型、权重或外部依赖，并返回后续流程需要使用的对象。
     
     Args:
-        cfg: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        device: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        class_names: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        cfg: 已解析的 YAML 配置字典，包含 project/data/model/train/infer 等运行参数。
+        device: torch 运行设备，例如 cuda、cuda:0 或 cpu。
+        class_names: 类别名称列表；列表顺序就是训练标签 ID 和推理类别 ID 的映射关系。
     
     Returns:
-        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
     """
     grounding_cfg = cfg["grounding_dino"]
     tokenizer = SimpleTokenizer(context_length=grounding_cfg["context_length"])
@@ -37,18 +37,18 @@ def postprocess_grounding(box_raw, objectness, class_logits, conf_threshold: flo
     """对模型原始输出做后处理，生成可解释的检测框、类别和置信度。
     
     Args:
-        box_raw: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        objectness: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        class_logits: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        conf_threshold: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        iou_threshold: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        image_size: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        original_shape: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        scale: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        pad: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        box_raw: GroundingDINO-like 模型输出的原始框回归张量。
+        objectness: 检测模型输出的目标存在性 logits。
+        class_logits: 文本条件检测模型输出的类别 logits，形状通常为 [B, C, H, W]。
+        conf_threshold: 置信度阈值，低于该分数的预测框会被过滤。
+        iou_threshold: NMS 的 IoU 阈值，用于去除高度重叠的重复框。
+        image_size: 模型输入图像尺寸，图片会缩放或 letterbox 到该大小。
+        original_shape: 原始图像高宽，用于把 letterbox 后坐标映射回原图。
+        scale: letterbox 缩放比例，用于还原检测框到原始图像坐标。
+        pad: letterbox 左上角填充值 (pad_x, pad_y)，用于坐标反变换。
     
     Returns:
-        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
     """
     boxes = decode_grounding_boxes(box_raw)[0]
     obj = objectness.sigmoid()[0]
@@ -84,16 +84,16 @@ def build_grounding_frame_inferencer(model, text_tokens, cfg, class_names, devic
     """根据配置构建可复用组件，降低入口函数中的业务耦合。
     
     Args:
-        model: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        text_tokens: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        cfg: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        class_names: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        device: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        tracker: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        source: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        model: 待训练或待推理的 PyTorch 模型实例。
+        text_tokens: 文本 prompt 经 tokenizer 编码后的 token 张量。
+        cfg: 已解析的 YAML 配置字典，包含 project/data/model/train/infer 等运行参数。
+        class_names: 类别名称列表；列表顺序就是训练标签 ID 和推理类别 ID 的映射关系。
+        device: torch 运行设备，例如 cuda、cuda:0 或 cpu。
+        tracker: 指标或推理跟踪器，用于写入 jsonl/csv 结构化日志。
+        source: 输入图片、视频、目录或数据源路径，由推理入口传入。
     
     Returns:
-        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
     """
     image_size = cfg["data"]["image_size"]
     frame_counter = {"idx": 0}
@@ -101,11 +101,11 @@ def build_grounding_frame_inferencer(model, text_tokens, cfg, class_names, devic
     def infer_frame(frame):
         """执行单次推理或分类逻辑，输出结构化预测结果。
         
-        Args:
-            frame: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            frame: OpenCV 读取的一帧 BGR 图像，用于单帧检测、绘框或视频写出。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         inp, scale, pad = letterbox(rgb, image_size)

@@ -25,14 +25,14 @@ class OpenCLIPImageDataset(Dataset):
         
         所属类: ``OpenCLIPImageDataset``。
         
-        Args:
-            root: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            split: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            class_names: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            preprocess: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            root: 数据集根目录路径；检测任务指向 detection 目录，识别任务指向 recognition 目录。
+            split: 数据划分名称，通常为 train、val 或 test，用于选择对应子目录。
+            class_names: 类别名称列表；列表顺序就是训练标签 ID 和推理类别 ID 的映射关系。
+            preprocess: OpenCLIP 官方图像预处理函数，与预训练权重的归一化方式保持一致。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         base = AnimalClassificationDataset(root, split, class_names, image_size=224)
         self.samples = base.samples
@@ -43,8 +43,8 @@ class OpenCLIPImageDataset(Dataset):
         
         所属类: ``OpenCLIPImageDataset``。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         return len(self.samples)
 
@@ -53,11 +53,11 @@ class OpenCLIPImageDataset(Dataset):
         
         所属类: ``OpenCLIPImageDataset``。
         
-        Args:
-            idx: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            idx: 样本索引，由 PyTorch DataLoader 传入，用于读取指定图片和标签。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         path, label = self.samples[idx]
         image = Image.open(path).convert("RGB")
@@ -72,14 +72,14 @@ class OpenCLIPLinearClassifier(nn.Module):
         
         所属类: ``OpenCLIPLinearClassifier``。
         
-        Args:
-            clip_model: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            embed_dim: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            num_classes: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            freeze_encoder: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            clip_model: OpenCLIP 模型实例，提供 encode_image 和 encode_text 特征编码接口。
+            embed_dim: OpenCLIP 图像特征维度，用于构建线性分类头输入层。
+            num_classes: 类别数量，必须与 class_names 长度一致。
+            freeze_encoder: 是否冻结预训练图像编码器；True 时只训练线性分类头。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         super().__init__()
         self.clip_model = clip_model
@@ -94,11 +94,11 @@ class OpenCLIPLinearClassifier(nn.Module):
         
         所属类: ``OpenCLIPLinearClassifier``。
         
-        Args:
-            images: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            images: 输入图像张量批次，形状通常为 [B, C, H, W]。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         context = torch.no_grad() if self.freeze_encoder else torch.enable_grad()
         with context:
@@ -111,12 +111,12 @@ def infer_embed_dim(clip_model, preprocess, device) -> int:
     """执行单次推理或分类逻辑，输出结构化预测结果。
     
     Args:
-        clip_model: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        preprocess: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        device: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        clip_model: OpenCLIP 模型实例，提供 encode_image 和 encode_text 特征编码接口。
+        preprocess: OpenCLIP 官方图像预处理函数，与预训练权重的归一化方式保持一致。
+        device: torch 运行设备，例如 cuda、cuda:0 或 cpu。
     
     Returns:
-        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
     """
     dummy = torch.zeros(1, 3, 224, 224, device=device)
     with torch.no_grad():
@@ -128,17 +128,17 @@ def run_epoch(model, loader, criterion, optimizer, device, train: bool, tracker:
     """执行一个完整流程步骤，通常包含训练、验证、推理或外部框架调用。
     
     Args:
-        model: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        loader: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        criterion: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        optimizer: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        device: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        train: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        tracker: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        epoch: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        model: 待训练或待推理的 PyTorch 模型实例。
+        loader: PyTorch DataLoader，负责按 batch 提供训练或验证数据。
+        criterion: 损失函数对象，用于根据模型输出和标签计算训练损失。
+        optimizer: 优化器对象，训练阶段用于清梯度、反向传播后更新参数。
+        device: torch 运行设备，例如 cuda、cuda:0 或 cpu。
+        train: 布尔值；为 True 时启用训练模式和反向传播，为 False 时执行验证/评估。
+        tracker: 指标或推理跟踪器，用于写入 jsonl/csv 结构化日志。
+        epoch: 当前训练轮次，从 1 开始记录，用于日志、曲线和 checkpoint 命名。
     
     Returns:
-        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
     """
     model.train(train)
     total_loss = 0.0
@@ -169,7 +169,7 @@ def main() -> None:
     """命令行入口函数，解析参数、加载配置并调度对应的训练或推理流程。
     
     Returns:
-        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
     """
     parser = argparse.ArgumentParser(description="Train OpenCLIP linear classifier for animal recognition")
     parser.add_argument("--config", default="configs/default.yaml")
@@ -188,8 +188,10 @@ def main() -> None:
 
     train_set = OpenCLIPImageDataset(openclip_cfg["data_root"], "train", class_names, preprocess)
     val_set = OpenCLIPImageDataset(openclip_cfg["data_root"], "val", class_names, preprocess)
-    train_loader = DataLoader(train_set, batch_size=openclip_cfg["batch_size"], shuffle=True, num_workers=cfg["data"]["num_workers"], pin_memory=True)
-    val_loader = DataLoader(val_set, batch_size=openclip_cfg["batch_size"], shuffle=False, num_workers=cfg["data"]["num_workers"], pin_memory=True)
+    num_workers = int(openclip_cfg.get("num_workers", cfg["data"]["num_workers"]))
+    pin_memory = device.type == "cuda"
+    train_loader = DataLoader(train_set, batch_size=openclip_cfg["batch_size"], shuffle=True, num_workers=num_workers, pin_memory=pin_memory, persistent_workers=num_workers > 0)
+    val_loader = DataLoader(val_set, batch_size=openclip_cfg["batch_size"], shuffle=False, num_workers=num_workers, pin_memory=pin_memory, persistent_workers=num_workers > 0)
 
     optimizer = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=openclip_cfg["learning_rate"], weight_decay=cfg["train"]["weight_decay"])
     criterion = nn.CrossEntropyLoss()

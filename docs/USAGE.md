@@ -75,10 +75,10 @@ bash script/setup_conda_env.sh all
 检测模型使用 YOLO 格式数据：
 
 ```text
-data/animal_detection/images/train/*.jpg
-data/animal_detection/images/val/*.jpg
-data/animal_detection/labels/train/*.txt
-data/animal_detection/labels/val/*.txt
+data/coco_animals/detection/images/train/*.jpg
+data/coco_animals/detection/images/val/*.jpg
+data/coco_animals/detection/labels/train/*.txt
+data/coco_animals/detection/labels/val/*.txt
 ```
 
 每个 label 文件每行：
@@ -94,10 +94,10 @@ class_id center_x center_y width height
 识别模型使用分类目录格式：
 
 ```text
-data/animal_classification/train/cat/*.jpg
-data/animal_classification/train/dog/*.jpg
-data/animal_classification/val/cat/*.jpg
-data/animal_classification/val/dog/*.jpg
+data/animals10/recognition/train/cat/*.jpg
+data/animals10/recognition/train/dog/*.jpg
+data/animals10/recognition/val/cat/*.jpg
+data/animals10/recognition/val/dog/*.jpg
 ```
 
 类别名需要和 `configs/default.yaml` 中的 `data.class_names` 对应。

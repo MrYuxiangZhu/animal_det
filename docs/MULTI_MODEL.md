@@ -31,9 +31,9 @@ bash run_infer.sh tiny_detector configs/default.yaml samples/demo.mp4 outputs/in
 训练数据需要分类目录：
 
 ```text
-data/animal_classification/train/cat/*.jpg
-data/animal_classification/train/dog/*.jpg
-data/animal_classification/val/cat/*.jpg
+data/animals10/recognition/train/cat/*.jpg
+data/animals10/recognition/train/dog/*.jpg
+data/animals10/recognition/val/cat/*.jpg
 ```
 
 训练：

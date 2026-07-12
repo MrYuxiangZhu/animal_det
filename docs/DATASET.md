@@ -13,7 +13,7 @@
 ## 标准目录结构
 
 ```text
-data/animal_detection/
+data/coco_animals/detection/
   images/
     train/
       xxx.jpg
@@ -45,6 +45,6 @@ class_id center_x center_y width height
 ```bash
 python -m src.data.prepare_public_dataset \
   --source-root /path/to/downloaded_yolo_dataset \
-  --output-root data/animal_detection \
+  --output-root data/coco_animals/detection \
   --val-ratio 0.2
 ```

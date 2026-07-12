@@ -27,5 +27,14 @@ def resize_square(image: np.ndarray, image_size: int) -> np.ndarray:
 
 def image_to_tensor(image: np.ndarray) -> torch.Tensor:
     """BGR/RGB uint8 图像转为归一化 CHW Tensor。"""
+    ### `.permute(2, 0, 1)` 通道维度转换（关键）
+
+    #  OpenCV/PIL/numpy 默认格式：`[H, W, C]` 高、宽、通道
+    # PyTorch CNN /timm/ OpenCLIP 强制要求输入格式：`[C, H, W]` 通道、高、宽
+    # permute(2,0,1) 代表重新排列维度顺序：
+    # 原第 2 维（通道 C）放到最前面
+    # 原第 0 维（高度 H）放中间
+    # 原第 1 维（宽度 W）放最后
+
     image = image.astype(np.float32) / 255.0
     return torch.from_numpy(image).permute(2, 0, 1).contiguous()

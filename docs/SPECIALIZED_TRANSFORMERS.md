@@ -15,8 +15,8 @@
 用途：图文对比学习、零样本动物识别。
 
 ```bash
-bash setup_conda_env.sh openclip
-bash run_infer_specialized.sh openclip configs/default.yaml animal.jpg outputs/inference/openclip.txt "red panda,snow leopard,fox"
+bash script/setup_conda_env.sh openclip
+bash script/run_infer_specialized.sh openclip configs/default.yaml animal.jpg outputs/inference/openclip.txt "red panda,snow leopard,fox"
 ```
 
 配置：
@@ -33,8 +33,8 @@ openclip:
 用途：跨物种动物关键点、姿态估计、行为分析。
 
 ```bash
-bash setup_conda_env.sh superanimal
-bash run_infer_specialized.sh superanimal configs/default.yaml animal_video.mp4 outputs/superanimal/result.mp4
+bash script/setup_conda_env.sh superanimal
+bash script/run_infer_specialized.sh superanimal configs/default.yaml animal_video.mp4 outputs/superanimal/result.mp4
 ```
 
 配置：
@@ -51,10 +51,10 @@ superanimal:
 用途：红外相机、野生动物检测和分类流水线。
 
 ```bash
-bash setup_conda_env.sh pytorch_wildlife
+bash script/setup_conda_env.sh pytorch_wildlife
 mkdir -p third_party
 git clone https://github.com/microsoft/CameraTraps third_party/CameraTraps
-bash run_infer_specialized.sh pytorch_wildlife configs/default.yaml camera_trap_dir outputs/wildlife/result.json
+bash script/run_infer_specialized.sh pytorch_wildlife configs/default.yaml camera_trap_dir outputs/wildlife/result.json
 ```
 
 注意：不同版本仓库入口脚本可能不同，需要根据官方仓库实际脚本调整：
@@ -69,10 +69,10 @@ pytorch_wildlife:
 用途：鸟类细粒度 Transformer 识别。
 
 ```bash
-bash setup_conda_env.sh birder
+bash script/setup_conda_env.sh birder
 mkdir -p third_party
 git clone https://github.com/birder-project/birder third_party/birder
-bash run_infer_specialized.sh birder configs/default.yaml bird.jpg outputs/inference/birder.txt
+bash script/run_infer_specialized.sh birder configs/default.yaml bird.jpg outputs/inference/birder.txt
 ```
 
 配置：

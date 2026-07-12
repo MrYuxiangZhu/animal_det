@@ -18,13 +18,13 @@ class AnimalDetector(nn.Module):
         
         所属类: ``AnimalDetector``。
         
-        Args:
-            num_classes: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            num_anchors: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            width_mult: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            num_classes: 类别数量，必须与 class_names 长度一致。
+            num_anchors: num_anchors 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            width_mult: width_mult 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         super().__init__()
         self.num_classes = num_classes
@@ -42,11 +42,11 @@ class AnimalDetector(nn.Module):
         
         所属类: ``AnimalDetector``。
         
-        Args:
-            x: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            x: x 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         feats = self.neck(self.backbone(x))
         pred = self.head(feats)

@@ -15,12 +15,12 @@ class DetectionLoss(nn.Module):
         
         所属类: ``DetectionLoss``。
         
-        Args:
-            anchors: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            num_classes: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            anchors: YOLO 风格 anchor 尺寸列表或张量，用于解码宽高和匹配目标。
+            num_classes: 类别数量，必须与 class_names 长度一致。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         super().__init__()
         self.register_buffer("anchors", torch.tensor(anchors, dtype=torch.float32))
@@ -32,12 +32,12 @@ class DetectionLoss(nn.Module):
         
         所属类: ``DetectionLoss``。
         
-        Args:
-            preds: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            targets: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            preds: 检测模型原始输出张量，用于 loss 计算或后处理解码。
+            targets: 当前 batch 的目标标注列表；每张图为 [class_id, cx, cy, w, h]。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         b, a, h, w, _ = preds.shape
         device = preds.device
@@ -73,12 +73,12 @@ class DetectionLoss(nn.Module):
         
         所属类: ``DetectionLoss``。
         
-        Args:
-            preds: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            targets: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            preds: 检测模型原始输出张量，用于 loss 计算或后处理解码。
+            targets: 当前 batch 的目标标注列表；每张图为 [class_id, cx, cy, w, h]。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         obj_target, box_target, cls_target, positive = self.build_targets(preds, targets)
         b, a, h, w, _ = preds.shape

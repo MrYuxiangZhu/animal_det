@@ -33,13 +33,13 @@ pip install open_clip_torch torch torchvision pillow opencv-python pyyaml tqdm m
 OpenCLIP 线性头训练使用分类目录格式：
 
 ```text
-data/animal_classification/train/cat/*.jpg
-data/animal_classification/train/dog/*.jpg
-data/animal_classification/train/horse/*.jpg
+data/animals10/recognition/train/cat/*.jpg
+data/animals10/recognition/train/dog/*.jpg
+data/animals10/recognition/train/horse/*.jpg
 
-data/animal_classification/val/cat/*.jpg
-data/animal_classification/val/dog/*.jpg
-data/animal_classification/val/horse/*.jpg
+data/animals10/recognition/val/cat/*.jpg
+data/animals10/recognition/val/dog/*.jpg
+data/animals10/recognition/val/horse/*.jpg
 ```
 
 类别名需要和 `configs/default.yaml` 中一致：
@@ -65,7 +65,7 @@ model:
 
 ```yaml
 openclip:
-  data_root: data/animal_classification
+  data_root: data/animals10/recognition
   model_name: ViT-B-32
   pretrained: laion2b_s34b_b79k
   prompt_template: "a photo of a {name}, a wild animal"

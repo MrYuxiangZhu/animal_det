@@ -20,16 +20,16 @@ def run_epoch(model, text_tokens, loader, criterion, optimizer, device, train: b
     """执行一个完整流程步骤，通常包含训练、验证、推理或外部框架调用。
     
     Args:
-        model: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        text_tokens: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        loader: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        criterion: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        optimizer: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        device: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        train: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        model: 待训练或待推理的 PyTorch 模型实例。
+        text_tokens: 文本 prompt 经 tokenizer 编码后的 token 张量。
+        loader: PyTorch DataLoader，负责按 batch 提供训练或验证数据。
+        criterion: 损失函数对象，用于根据模型输出和标签计算训练损失。
+        optimizer: 优化器对象，训练阶段用于清梯度、反向传播后更新参数。
+        device: torch 运行设备，例如 cuda、cuda:0 或 cpu。
+        train: 布尔值；为 True 时启用训练模式和反向传播，为 False 时执行验证/评估。
     
     Returns:
-        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
     """
     model.train(train)
     sums = {"total": 0.0, "box": 0.0, "obj": 0.0, "cls": 0.0}
@@ -55,7 +55,7 @@ def main() -> None:
     """命令行入口函数，解析参数、加载配置并调度对应的训练或推理流程。
     
     Returns:
-        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
     """
     parser = argparse.ArgumentParser(description="Train GroundingDINO-like animal open-vocabulary detector")
     parser.add_argument("--config", default="configs/default.yaml")

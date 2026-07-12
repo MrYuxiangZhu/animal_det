@@ -181,3 +181,5 @@ cython_debug/
 .cursorindexingignore
 weights/openclip/open_clip_model.safetensors
 data/
+outputs/
+logs/

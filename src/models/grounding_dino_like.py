@@ -15,14 +15,14 @@ class TextQueryEncoder(nn.Module):
         
         所属类: ``TextQueryEncoder``。
         
-        Args:
-            vocab_size: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            context_length: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            hidden_dim: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            num_layers: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            vocab_size: vocab_size 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            context_length: context_length 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            hidden_dim: hidden_dim 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            num_layers: num_layers 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         super().__init__()
         self.token_embedding = nn.Embedding(vocab_size, hidden_dim)
@@ -37,11 +37,11 @@ class TextQueryEncoder(nn.Module):
         
         所属类: ``TextQueryEncoder``。
         
-        Args:
-            tokens: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            tokens: tokens 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         mask = tokens.eq(0)
         x = self.token_embedding(tokens) + self.pos_embedding.unsqueeze(0)
@@ -66,15 +66,15 @@ class GroundingDINOAnimal(nn.Module):
         
         所属类: ``GroundingDINOAnimal``。
         
-        Args:
-            vocab_size: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            context_length: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            num_text_queries: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            hidden_dim: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            width_mult: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            vocab_size: vocab_size 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            context_length: context_length 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            num_text_queries: num_text_queries 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            hidden_dim: hidden_dim 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            width_mult: width_mult 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         super().__init__()
         self.backbone = TinyBackbone(width_mult=width_mult)
@@ -96,12 +96,12 @@ class GroundingDINOAnimal(nn.Module):
         
         所属类: ``GroundingDINOAnimal``。
         
-        Args:
-            images: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            text_tokens: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            images: 输入图像张量批次，形状通常为 [B, C, H, W]。
+            text_tokens: 文本 prompt 经 tokenizer 编码后的 token 张量。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         visual = self.visual_proj(self.backbone(images))
         b, c, h, w = visual.shape
@@ -118,10 +118,10 @@ def decode_grounding_boxes(box_raw: torch.Tensor) -> torch.Tensor:
     """把网络输出从训练/预测空间解码到归一化几何空间。
     
     Args:
-        box_raw: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        box_raw: GroundingDINO-like 模型输出的原始框回归张量。
     
     Returns:
-        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
     """
     b, h, w, _ = box_raw.shape
     device = box_raw.device

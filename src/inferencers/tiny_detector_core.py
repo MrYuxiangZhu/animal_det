@@ -13,11 +13,11 @@ def load_tiny_detector(cfg, device):
     """加载模型、权重或外部依赖，并返回后续流程需要使用的对象。
     
     Args:
-        cfg: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        device: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        cfg: 已解析的 YAML 配置字典，包含 project/data/model/train/infer 等运行参数。
+        device: torch 运行设备，例如 cuda、cuda:0 或 cpu。
     
     Returns:
-        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
     """
     checkpoint = torch.load(cfg["infer"]["checkpoint"], map_location=device)
     model = AnimalDetector(cfg["model"]["num_classes"], cfg["model"]["num_anchors"], cfg["model"]["width_mult"]).to(device)
@@ -31,17 +31,17 @@ def postprocess_tiny(raw, anchors, conf_threshold: float, iou_threshold: float, 
     """对模型原始输出做后处理，生成可解释的检测框、类别和置信度。
     
     Args:
-        raw: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        anchors: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        conf_threshold: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        iou_threshold: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        image_size: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        original_shape: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        scale: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        pad: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        raw: 检测头未后处理的原始输出张量。
+        anchors: YOLO 风格 anchor 尺寸列表或张量，用于解码宽高和匹配目标。
+        conf_threshold: 置信度阈值，低于该分数的预测框会被过滤。
+        iou_threshold: NMS 的 IoU 阈值，用于去除高度重叠的重复框。
+        image_size: 模型输入图像尺寸，图片会缩放或 letterbox 到该大小。
+        original_shape: 原始图像高宽，用于把 letterbox 后坐标映射回原图。
+        scale: letterbox 缩放比例，用于还原检测框到原始图像坐标。
+        pad: letterbox 左上角填充值 (pad_x, pad_y)，用于坐标反变换。
     
     Returns:
-        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
     """
     boxes, obj, cls_probs = decode_predictions(raw, anchors)
     scores_per_cls = obj.unsqueeze(-1) * cls_probs
@@ -75,13 +75,13 @@ def draw_detections(frame, detections, class_names, color=(46, 204, 113)):
     """把检测或识别结果绘制到图像帧上，用于可视化推理结果。
     
     Args:
-        frame: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        detections: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        class_names: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        color: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        frame: OpenCV 读取的一帧 BGR 图像，用于单帧检测、绘框或视频写出。
+        detections: 检测结果列表，每项通常为 box、score、class_id。
+        class_names: 类别名称列表；列表顺序就是训练标签 ID 和推理类别 ID 的映射关系。
+        color: color 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
     
     Returns:
-        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
     """
     for box, score, cls_id in detections:
         x1, y1, x2, y2 = box.tolist()
@@ -95,15 +95,15 @@ def build_tiny_frame_inferencer(model, anchors, cfg, device, tracker=None, sourc
     """根据配置构建可复用组件，降低入口函数中的业务耦合。
     
     Args:
-        model: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        anchors: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        cfg: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        device: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        tracker: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        source: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        model: 待训练或待推理的 PyTorch 模型实例。
+        anchors: YOLO 风格 anchor 尺寸列表或张量，用于解码宽高和匹配目标。
+        cfg: 已解析的 YAML 配置字典，包含 project/data/model/train/infer 等运行参数。
+        device: torch 运行设备，例如 cuda、cuda:0 或 cpu。
+        tracker: 指标或推理跟踪器，用于写入 jsonl/csv 结构化日志。
+        source: 输入图片、视频、目录或数据源路径，由推理入口传入。
     
     Returns:
-        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
     """
     image_size = cfg["data"]["image_size"]
     class_names = cfg["data"]["class_names"]
@@ -112,11 +112,11 @@ def build_tiny_frame_inferencer(model, anchors, cfg, device, tracker=None, sourc
     def infer_frame(frame):
         """执行单次推理或分类逻辑，输出结构化预测结果。
         
-        Args:
-            frame: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            frame: OpenCV 读取的一帧 BGR 图像，用于单帧检测、绘框或视频写出。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         inp, scale, pad = letterbox(rgb, image_size)

@@ -41,7 +41,7 @@ birder
 识别模型需要分类目录格式：
 
 ```text
-data/animal_classification/
+data/animals10/recognition/
   train/
     cat/*.jpg
     dog/*.jpg
@@ -85,8 +85,8 @@ kaggle datasets download -d alessiocorrado99/animals10 -p data/raw/animals10 --u
 整理到工程：
 
 ```text
-data/animal_classification/train/<class_name>/*.jpg
-data/animal_classification/val/<class_name>/*.jpg
+data/animals10/recognition/train/<class_name>/*.jpg
+data/animals10/recognition/val/<class_name>/*.jpg
 ```
 
 训练 OpenCLIP 线性头：
@@ -139,8 +139,8 @@ cd -
 
 ```text
 根据 annotations/list.txt 中的类别，把 images/*.jpg 拆分到：
-data/animal_classification/train/<breed>/*.jpg
-data/animal_classification/val/<breed>/*.jpg
+data/animals10/recognition/train/<breed>/*.jpg
+data/animals10/recognition/val/<breed>/*.jpg
 ```
 
 适合训练：
@@ -211,8 +211,8 @@ cd -
 整理后可放到：
 
 ```text
-data/animal_classification/train/<bird_species>/*.jpg
-data/animal_classification/val/<bird_species>/*.jpg
+data/animals10/recognition/train/<bird_species>/*.jpg
+data/animals10/recognition/val/<bird_species>/*.jpg
 ```
 
 ## 3. 检测模型推荐数据集
@@ -230,7 +230,7 @@ detectron2
 检测模型需要 YOLO 格式：
 
 ```text
-data/animal_detection/
+data/coco_animals/detection/
   images/
     train/*.jpg
     val/*.jpg
@@ -294,7 +294,7 @@ cd -
 整理方式：
 
 ```text
-COCO JSON -> 过滤动物类别 -> 转 YOLO label -> 放入 data/animal_detection
+COCO JSON -> 过滤动物类别 -> 转 YOLO label -> 放入 data/coco_animals/detection
 ```
 
 训练：
@@ -378,7 +378,7 @@ https://universe.roboflow.com/search?q=animal%20detection
 2. 搜索 animal detection / wildlife detection / cattle detection / pet detection
 3. 选择数据集
 4. 导出 YOLOv5 / YOLOv8 格式
-5. 解压后整理到 data/animal_detection
+5. 解压后整理到 data/coco_animals/detection
 ```
 
 训练：
@@ -621,7 +621,7 @@ timm
 
 ```yaml
 data:
-  root: data/animal_detection
+  root: data/coco_animals/detection
   train_images: images/train
   val_images: images/val
   train_labels: labels/train
@@ -638,10 +638,10 @@ model:
 
 ```yaml
 openclip:
-  data_root: data/animal_classification
+  data_root: data/animals10/recognition
 
 timm:
-  data_root: data/animal_classification
+  data_root: data/animals10/recognition
 ```
 
 分类目录名必须和 `data.class_names` 对应。

@@ -22,13 +22,13 @@ class TimmClassifier(nn.Module):
         
         所属类: ``TimmClassifier``。
         
-        Args:
-            model_name: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            num_classes: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            pretrained: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            model_name: 模型结构名称，例如 ViT-B-32、resnet50 或第三方框架配置中的网络名。
+            num_classes: 类别数量，必须与 class_names 长度一致。
+            pretrained: 预训练权重标签；为空时不联网下载，通常配合本地 checkpoint_path 使用。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         super().__init__()
         require_package("timm", "pip install timm")
@@ -41,11 +41,11 @@ class TimmClassifier(nn.Module):
         
         所属类: ``TimmClassifier``。
         
-        Args:
-            x: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            x: x 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         return self.model(x)
 
@@ -54,14 +54,14 @@ def run_epoch(model, loader, optimizer, device, train: bool) -> Dict[str, float]
     """执行一个完整流程步骤，通常包含训练、验证、推理或外部框架调用。
     
     Args:
-        model: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        loader: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        optimizer: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        device: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-        train: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        model: 待训练或待推理的 PyTorch 模型实例。
+        loader: PyTorch DataLoader，负责按 batch 提供训练或验证数据。
+        optimizer: 优化器对象，训练阶段用于清梯度、反向传播后更新参数。
+        device: torch 运行设备，例如 cuda、cuda:0 或 cpu。
+        train: 布尔值；为 True 时启用训练模式和反向传播，为 False 时执行验证/评估。
     
     Returns:
-        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
     """
     model.train(train)
     total_loss = 0.0
@@ -88,7 +88,7 @@ def main() -> None:
     """命令行入口函数，解析参数、加载配置并调度对应的训练或推理流程。
     
     Returns:
-        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
     """
     parser = argparse.ArgumentParser(description="Train animal classifier with timm backbone")
     parser.add_argument("--config", default="configs/default.yaml")

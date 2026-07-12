@@ -21,31 +21,46 @@ class AnimalDetectionDataset(Dataset):
         
         所属类: ``AnimalDetectionDataset``。
         
-        Args:
-            root: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            image_dir: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            label_dir: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
-            image_size: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            root: 数据集根目录路径；检测任务指向 detection 目录，识别任务指向 recognition 目录。
+            image_dir: 相对 root 的图片目录，例如 train/images 或 val/images。
+            label_dir: 相对 root 的 YOLO 标签目录，例如 train/labels 或 val/labels。
+            image_size: 模型输入图像尺寸，图片会缩放或 letterbox 到该大小。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         self.root = Path(root)
-        self.image_dir = self.root / image_dir
-        self.label_dir = self.root / label_dir
+        self.image_dir = self._resolve_dir(image_dir)
+        self.label_dir = self._resolve_dir(label_dir)
         self.image_size = image_size
         suffixes = {".jpg", ".jpeg", ".png", ".bmp"}
         self.images = sorted([p for p in self.image_dir.rglob("*") if p.suffix.lower() in suffixes])
         if not self.images:
-            raise RuntimeError(f"没有在 {self.image_dir} 找到图片。")
+            raise RuntimeError(
+                f"没有在 {self.image_dir} 找到图片。请按 data/<dataset_name>/detection/train/images 这类结构整理数据，"
+                f"或检查 configs/default.yaml 中 data.root/train_images/val_images。"
+            )
+
+    def _resolve_dir(self, relative_or_abs: str) -> Path:
+        """将配置中的相对路径解析到当前数据集根目录下。
+        
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            relative_or_abs: relative_or_abs 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+        
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            解析后的目录路径。
+        """
+        path = Path(relative_or_abs)
+        return path if path.is_absolute() else self.root / path
 
     def __len__(self) -> int:
         """返回数据集或容器中的样本数量，供 DataLoader 或外部迭代逻辑使用。
         
         所属类: ``AnimalDetectionDataset``。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         return len(self.images)
 
@@ -54,11 +69,11 @@ class AnimalDetectionDataset(Dataset):
         
         所属类: ``AnimalDetectionDataset``。
         
-        Args:
-            idx: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        Args: Args 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            idx: 样本索引，由 PyTorch DataLoader 传入，用于读取指定图片和标签。
         
-        Returns:
-            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        Returns: Returns 参数；请结合函数职责理解其业务含义，调用时应传入与当前任务匹配的值。
+            函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
         """
         image_path = self.images[idx]
         image = cv2.imread(str(image_path))

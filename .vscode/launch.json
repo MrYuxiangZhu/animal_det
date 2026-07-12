@@ -1,0 +1,260 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Train | tiny_detector",
+      "type": "python",
+      "request": "launch",
+      "module": "src.trainers.tiny_detector",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "args": ["--config", "configs/default.yaml"]
+    },
+    {
+      "name": "Train | grounding_dino",
+      "type": "python",
+      "request": "launch",
+      "module": "src.trainers.grounding_dino",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "args": ["--config", "configs/default.yaml"]
+    },
+    {
+      "name": "Train | clip",
+      "type": "python",
+      "request": "launch",
+      "module": "src.trainers.clip",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "args": ["--config", "configs/default.yaml"]
+    },
+    {
+      "name": "Train | openclip",
+      "type": "python",
+      "request": "launch",
+      "module": "src.trainers.openclip",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "args": ["--config", "configs/default.yaml"]
+    },
+    {
+      "name": "Train | timm",
+      "type": "python",
+      "request": "launch",
+      "module": "src.trainers.timm",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "args": ["--config", "configs/default.yaml"]
+    },
+    {
+      "name": "Train | yolov5 adapter",
+      "type": "python",
+      "request": "launch",
+      "module": "src.trainers.yolov5",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "args": ["--config", "configs/default.yaml"]
+    },
+    {
+      "name": "Train | mmdetection adapter",
+      "type": "python",
+      "request": "launch",
+      "module": "src.trainers.mmdetection",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "args": ["--config", "configs/default.yaml"]
+    },
+    {
+      "name": "Train | detectron2 adapter",
+      "type": "python",
+      "request": "launch",
+      "module": "src.trainers.detectron2",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "args": ["--config", "configs/default.yaml"]
+    },
+    {
+      "name": "Infer | tiny_detector image/video",
+      "type": "python",
+      "request": "launch",
+      "module": "src.inferencers.tiny_detector",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "args": [
+        "--config", "configs/default.yaml",
+        "--source", "samples/demo.mp4",
+        "--output", "outputs/inference/tiny_debug.mp4"
+      ]
+    },
+    {
+      "name": "Infer | grounding_dino text detection",
+      "type": "python",
+      "request": "launch",
+      "module": "src.inferencers.grounding_dino",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "args": [
+        "--config", "configs/default.yaml",
+        "--source", "samples/demo.mp4",
+        "--output", "outputs/inference/grounding_debug.mp4",
+        "--text", "dog,horse,elephant,cat,cow,sheep"
+      ]
+    },
+    {
+      "name": "Infer | clip zero-shot image",
+      "type": "python",
+      "request": "launch",
+      "module": "src.inferencers.clip",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "args": [
+        "--config", "configs/default.yaml",
+        "--source", "samples/animal.jpg",
+        "--output", "outputs/inference/clip_debug.txt",
+        "--text", "dog,horse,elephant,butterfly,chicken,cat,cow,sheep,spider,squirrel"
+      ]
+    },
+    {
+      "name": "Infer | openclip zero-shot image",
+      "type": "python",
+      "request": "launch",
+      "module": "src.inferencers.openclip",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "args": [
+        "--config", "configs/default.yaml",
+        "--source", "samples/animal.jpg",
+        "--output", "outputs/inference/openclip_debug.txt",
+        "--text", "dog,horse,elephant,butterfly,chicken,cat,cow,sheep,spider,squirrel"
+      ]
+    },
+    {
+      "name": "Infer | timm image classification",
+      "type": "python",
+      "request": "launch",
+      "module": "src.inferencers.timm",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "args": [
+        "--config", "configs/default.yaml",
+        "--source", "samples/animal.jpg",
+        "--output", "outputs/inference/timm_debug.txt"
+      ]
+    },
+    {
+      "name": "Infer | yolov5 adapter",
+      "type": "python",
+      "request": "launch",
+      "module": "src.inferencers.yolov5",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "args": [
+        "--config", "configs/default.yaml",
+        "--source", "samples/demo.mp4",
+        "--output", "outputs/inference/yolov5_debug.mp4"
+      ]
+    },
+    {
+      "name": "Infer | mmdetection adapter",
+      "type": "python",
+      "request": "launch",
+      "module": "src.inferencers.mmdetection",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "args": [
+        "--config", "configs/default.yaml",
+        "--source", "samples/animal.jpg",
+        "--output", "outputs/inference/mmdet_debug.jpg"
+      ]
+    },
+    {
+      "name": "Infer | detectron2 adapter",
+      "type": "python",
+      "request": "launch",
+      "module": "src.inferencers.detectron2",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "args": [
+        "--config", "configs/default.yaml",
+        "--source", "samples/animal.jpg",
+        "--output", "outputs/inference/detectron2_debug.jpg"
+      ]
+    },
+    {
+      "name": "Infer | superanimal pose",
+      "type": "python",
+      "request": "launch",
+      "module": "src.inferencers.superanimal",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "args": [
+        "--config", "configs/default.yaml",
+        "--source", "samples/demo.mp4",
+        "--output", "outputs/superanimal/debug.mp4"
+      ]
+    },
+    {
+      "name": "Infer | pytorch_wildlife pipeline",
+      "type": "python",
+      "request": "launch",
+      "module": "src.inferencers.pytorch_wildlife",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "args": [
+        "--config", "configs/default.yaml",
+        "--source", "samples/camera_trap",
+        "--output", "outputs/wildlife/debug.json"
+      ]
+    },
+    {
+      "name": "Infer | birder fine-grained",
+      "type": "python",
+      "request": "launch",
+      "module": "src.inferencers.birder",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "args": [
+        "--config", "configs/default.yaml",
+        "--source", "samples/bird.jpg",
+        "--output", "outputs/inference/birder_debug.txt"
+      ]
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug | Core recognition models",
+      "configurations": [
+        "Train | openclip",
+        "Train | timm"
+      ],
+      "stopAll": true
+    },
+    {
+      "name": "Debug | Core detection models",
+      "configurations": [
+        "Train | tiny_detector",
+        "Train | grounding_dino"
+      ],
+      "stopAll": true
+    }
+  ]
+}
