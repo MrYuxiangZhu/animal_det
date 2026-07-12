@@ -11,6 +11,19 @@ class TextQueryEncoder(nn.Module):
     """把动物类别文本编码成检测查询，模拟 Grounding DINO 的文本查询思想。"""
 
     def __init__(self, vocab_size: int, context_length: int, hidden_dim: int, num_layers: int = 2) -> None:
+        """初始化对象，保存后续训练、推理或数据处理所需的配置和状态。
+        
+        所属类: ``TextQueryEncoder``。
+        
+        Args:
+            vocab_size: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            context_length: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            hidden_dim: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            num_layers: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         super().__init__()
         self.token_embedding = nn.Embedding(vocab_size, hidden_dim)
         self.pos_embedding = nn.Parameter(torch.empty(context_length, hidden_dim))
@@ -20,6 +33,16 @@ class TextQueryEncoder(nn.Module):
         nn.init.normal_(self.pos_embedding, std=0.01)
 
     def forward(self, tokens: torch.Tensor) -> torch.Tensor:
+        """定义模块的前向传播逻辑，将输入张量转换为模型输出。
+        
+        所属类: ``TextQueryEncoder``。
+        
+        Args:
+            tokens: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         mask = tokens.eq(0)
         x = self.token_embedding(tokens) + self.pos_embedding.unsqueeze(0)
         x = self.encoder(x, src_key_padding_mask=mask)
@@ -39,6 +62,20 @@ class GroundingDINOAnimal(nn.Module):
     """
 
     def __init__(self, vocab_size: int, context_length: int, num_text_queries: int, hidden_dim: int = 256, width_mult: float = 0.75) -> None:
+        """初始化对象，保存后续训练、推理或数据处理所需的配置和状态。
+        
+        所属类: ``GroundingDINOAnimal``。
+        
+        Args:
+            vocab_size: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            context_length: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            num_text_queries: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            hidden_dim: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            width_mult: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         super().__init__()
         self.backbone = TinyBackbone(width_mult=width_mult)
         self.visual_proj = ConvBNAct(self.backbone.out_channels, hidden_dim, kernel_size=1)
@@ -55,6 +92,17 @@ class GroundingDINOAnimal(nn.Module):
         self.num_text_queries = num_text_queries
 
     def forward(self, images: torch.Tensor, text_tokens: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """定义模块的前向传播逻辑，将输入张量转换为模型输出。
+        
+        所属类: ``GroundingDINOAnimal``。
+        
+        Args:
+            images: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            text_tokens: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         visual = self.visual_proj(self.backbone(images))
         b, c, h, w = visual.shape
         text_features = F.normalize(self.text_encoder(text_tokens), dim=-1)
@@ -67,6 +115,14 @@ class GroundingDINOAnimal(nn.Module):
 
 
 def decode_grounding_boxes(box_raw: torch.Tensor) -> torch.Tensor:
+    """把网络输出从训练/预测空间解码到归一化几何空间。
+    
+    Args:
+        box_raw: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+    
+    Returns:
+        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+    """
     b, h, w, _ = box_raw.shape
     device = box_raw.device
     grid_y, grid_x = torch.meshgrid(torch.arange(h, device=device), torch.arange(w, device=device), indexing="ij")

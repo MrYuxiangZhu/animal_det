@@ -21,14 +21,44 @@ class OpenCLIPImageDataset(Dataset):
     """复用分类数据集样本路径，但使用 OpenCLIP 官方 preprocess。"""
 
     def __init__(self, root: str, split: str, class_names: List[str], preprocess) -> None:
+        """初始化对象，保存后续训练、推理或数据处理所需的配置和状态。
+        
+        所属类: ``OpenCLIPImageDataset``。
+        
+        Args:
+            root: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            split: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            class_names: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            preprocess: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         base = AnimalClassificationDataset(root, split, class_names, image_size=224)
         self.samples = base.samples
         self.preprocess = preprocess
 
     def __len__(self) -> int:
+        """返回数据集或容器中的样本数量，供 DataLoader 或外部迭代逻辑使用。
+        
+        所属类: ``OpenCLIPImageDataset``。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         return len(self.samples)
 
     def __getitem__(self, idx: int):
+        """按索引读取一个样本，并完成必要的数据解码、预处理和标签转换。
+        
+        所属类: ``OpenCLIPImageDataset``。
+        
+        Args:
+            idx: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         path, label = self.samples[idx]
         image = Image.open(path).convert("RGB")
         return self.preprocess(image), torch.tensor(label, dtype=torch.long)
@@ -38,6 +68,19 @@ class OpenCLIPLinearClassifier(nn.Module):
     """冻结 OpenCLIP 图像编码器，只训练轻量分类头。"""
 
     def __init__(self, clip_model, embed_dim: int, num_classes: int, freeze_encoder: bool = True) -> None:
+        """初始化对象，保存后续训练、推理或数据处理所需的配置和状态。
+        
+        所属类: ``OpenCLIPLinearClassifier``。
+        
+        Args:
+            clip_model: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            embed_dim: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            num_classes: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            freeze_encoder: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         super().__init__()
         self.clip_model = clip_model
         self.freeze_encoder = freeze_encoder
@@ -47,6 +90,16 @@ class OpenCLIPLinearClassifier(nn.Module):
                 param.requires_grad = False
 
     def forward(self, images: torch.Tensor) -> torch.Tensor:
+        """定义模块的前向传播逻辑，将输入张量转换为模型输出。
+        
+        所属类: ``OpenCLIPLinearClassifier``。
+        
+        Args:
+            images: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         context = torch.no_grad() if self.freeze_encoder else torch.enable_grad()
         with context:
             features = self.clip_model.encode_image(images)
@@ -55,6 +108,16 @@ class OpenCLIPLinearClassifier(nn.Module):
 
 
 def infer_embed_dim(clip_model, preprocess, device) -> int:
+    """执行单次推理或分类逻辑，输出结构化预测结果。
+    
+    Args:
+        clip_model: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        preprocess: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        device: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+    
+    Returns:
+        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+    """
     dummy = torch.zeros(1, 3, 224, 224, device=device)
     with torch.no_grad():
         features = clip_model.encode_image(dummy)
@@ -62,6 +125,21 @@ def infer_embed_dim(clip_model, preprocess, device) -> int:
 
 
 def run_epoch(model, loader, criterion, optimizer, device, train: bool, tracker: MetricTracker, epoch: int) -> Dict[str, float]:
+    """执行一个完整流程步骤，通常包含训练、验证、推理或外部框架调用。
+    
+    Args:
+        model: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        loader: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        criterion: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        optimizer: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        device: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        train: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        tracker: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        epoch: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+    
+    Returns:
+        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+    """
     model.train(train)
     total_loss = 0.0
     total_correct = 0
@@ -88,6 +166,11 @@ def run_epoch(model, loader, criterion, optimizer, device, train: bool, tracker:
 
 
 def main() -> None:
+    """命令行入口函数，解析参数、加载配置并调度对应的训练或推理流程。
+    
+    Returns:
+        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+    """
     parser = argparse.ArgumentParser(description="Train OpenCLIP linear classifier for animal recognition")
     parser.add_argument("--config", default="configs/default.yaml")
     args = parser.parse_args()
@@ -99,7 +182,7 @@ def main() -> None:
     class_names = cfg["data"]["class_names"]
     openclip_cfg = cfg["openclip"]
 
-    clip_model, preprocess, _ = load_openclip_model(openclip_cfg["model_name"], openclip_cfg["pretrained"], device)
+    clip_model, preprocess, _ = load_openclip_model(openclip_cfg["model_name"], openclip_cfg.get("pretrained", ""), device, openclip_cfg.get("checkpoint_path", ""))
     embed_dim = infer_embed_dim(clip_model, preprocess, device)
     model = OpenCLIPLinearClassifier(clip_model, embed_dim, len(class_names), freeze_encoder=openclip_cfg.get("freeze_encoder", True)).to(device)
 

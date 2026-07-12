@@ -17,6 +17,20 @@ from src.utils.visualization import save_loss_curve
 
 
 def run_epoch(model, text_tokens, loader, criterion, optimizer, device, train: bool) -> Dict[str, float]:
+    """执行一个完整流程步骤，通常包含训练、验证、推理或外部框架调用。
+    
+    Args:
+        model: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        text_tokens: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        loader: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        criterion: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        optimizer: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        device: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        train: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+    
+    Returns:
+        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+    """
     model.train(train)
     sums = {"total": 0.0, "box": 0.0, "obj": 0.0, "cls": 0.0}
     steps = 0
@@ -38,6 +52,11 @@ def run_epoch(model, text_tokens, loader, criterion, optimizer, device, train: b
 
 
 def main() -> None:
+    """命令行入口函数，解析参数、加载配置并调度对应的训练或推理流程。
+    
+    Returns:
+        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+    """
     parser = argparse.ArgumentParser(description="Train GroundingDINO-like animal open-vocabulary detector")
     parser.add_argument("--config", default="configs/default.yaml")
     args = parser.parse_args()

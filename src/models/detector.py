@@ -14,6 +14,18 @@ class AnimalDetector(nn.Module):
     """
 
     def __init__(self, num_classes: int, num_anchors: int = 3, width_mult: float = 0.75) -> None:
+        """初始化对象，保存后续训练、推理或数据处理所需的配置和状态。
+        
+        所属类: ``AnimalDetector``。
+        
+        Args:
+            num_classes: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            num_anchors: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            width_mult: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         super().__init__()
         self.num_classes = num_classes
         self.num_anchors = num_anchors
@@ -26,6 +38,16 @@ class AnimalDetector(nn.Module):
         self.head = nn.Conv2d(self.backbone.out_channels, num_anchors * (5 + num_classes), kernel_size=1)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """定义模块的前向传播逻辑，将输入张量转换为模型输出。
+        
+        所属类: ``AnimalDetector``。
+        
+        Args:
+            x: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         feats = self.neck(self.backbone(x))
         pred = self.head(feats)
         b, _, h, w = pred.shape

@@ -11,11 +11,32 @@ class GroundingDetectionLoss(nn.Module):
     """文本条件检测损失，用类别文本查询监督网格级开放词汇检测。"""
 
     def __init__(self, num_classes: int) -> None:
+        """初始化对象，保存后续训练、推理或数据处理所需的配置和状态。
+        
+        所属类: ``GroundingDetectionLoss``。
+        
+        Args:
+            num_classes: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         super().__init__()
         self.num_classes = num_classes
         self.bce = nn.BCEWithLogitsLoss(reduction="none")
 
     def build_targets(self, box_raw: torch.Tensor, targets: List[torch.Tensor]) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+        """根据配置构建可复用组件，降低入口函数中的业务耦合。
+        
+        所属类: ``GroundingDetectionLoss``。
+        
+        Args:
+            box_raw: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            targets: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         b, h, w, _ = box_raw.shape
         device = box_raw.device
         obj_target = torch.zeros((b, h, w), device=device)
@@ -40,6 +61,19 @@ class GroundingDetectionLoss(nn.Module):
         return obj_target, box_target, cls_target, positive
 
     def forward(self, box_raw: torch.Tensor, objectness: torch.Tensor, class_logits: torch.Tensor, targets: List[torch.Tensor]) -> Tuple[torch.Tensor, Dict[str, float]]:
+        """定义模块的前向传播逻辑，将输入张量转换为模型输出。
+        
+        所属类: ``GroundingDetectionLoss``。
+        
+        Args:
+            box_raw: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            objectness: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            class_logits: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            targets: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         obj_target, box_target, cls_target, positive = self.build_targets(box_raw, targets)
         pred_boxes = decode_grounding_boxes(box_raw)
         if positive.any():

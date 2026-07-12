@@ -17,6 +17,14 @@ from src.utils.visualization import save_loss_curve
 
 
 def build_dataloaders(cfg):
+    """根据配置构建可复用组件，降低入口函数中的业务耦合。
+    
+    Args:
+        cfg: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+    
+    Returns:
+        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+    """
     train_set = AnimalDetectionDataset(cfg["data"]["root"], cfg["data"]["train_images"], cfg["data"]["train_labels"], cfg["data"]["image_size"])
     val_set = AnimalDetectionDataset(cfg["data"]["root"], cfg["data"]["val_images"], cfg["data"]["val_labels"], cfg["data"]["image_size"])
     train_loader = DataLoader(train_set, batch_size=cfg["train"]["batch_size"], shuffle=True, num_workers=cfg["data"]["num_workers"], collate_fn=detection_collate, pin_memory=True)
@@ -25,6 +33,15 @@ def build_dataloaders(cfg):
 
 
 def build_components(cfg, device):
+    """根据配置构建可复用组件，降低入口函数中的业务耦合。
+    
+    Args:
+        cfg: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        device: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+    
+    Returns:
+        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+    """
     model = AnimalDetector(cfg["model"]["num_classes"], cfg["model"]["num_anchors"], cfg["model"]["width_mult"]).to(device)
     criterion = DetectionLoss(cfg["model"]["anchors"], cfg["model"]["num_classes"]).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=cfg["train"]["learning_rate"], weight_decay=cfg["train"]["weight_decay"])
@@ -32,6 +49,11 @@ def build_components(cfg, device):
 
 
 def main() -> None:
+    """命令行入口函数，解析参数、加载配置并调度对应的训练或推理流程。
+    
+    Returns:
+        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+    """
     parser = argparse.ArgumentParser(description="Train tiny animal detector")
     parser.add_argument("--config", default="configs/default.yaml", help="配置文件路径")
     args = parser.parse_args()

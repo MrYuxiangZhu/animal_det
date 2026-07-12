@@ -6,6 +6,11 @@ from src.utils.logger import setup_logger
 
 
 def main() -> None:
+    """命令行入口函数，解析参数、加载配置并调度对应的训练或推理流程。
+    
+    Returns:
+        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+    """
     parser = argparse.ArgumentParser(description="Birder MViT fine-grained bird recognition")
     parser.add_argument("--config", default="configs/default.yaml")
     parser.add_argument("--source", default=None)

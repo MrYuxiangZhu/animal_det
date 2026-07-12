@@ -17,6 +17,19 @@ class AnimalDetectionDataset(Dataset):
     """
 
     def __init__(self, root: str, image_dir: str, label_dir: str, image_size: int) -> None:
+        """初始化对象，保存后续训练、推理或数据处理所需的配置和状态。
+        
+        所属类: ``AnimalDetectionDataset``。
+        
+        Args:
+            root: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            image_dir: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            label_dir: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            image_size: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         self.root = Path(root)
         self.image_dir = self.root / image_dir
         self.label_dir = self.root / label_dir
@@ -27,9 +40,26 @@ class AnimalDetectionDataset(Dataset):
             raise RuntimeError(f"没有在 {self.image_dir} 找到图片。")
 
     def __len__(self) -> int:
+        """返回数据集或容器中的样本数量，供 DataLoader 或外部迭代逻辑使用。
+        
+        所属类: ``AnimalDetectionDataset``。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         return len(self.images)
 
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor, Dict[str, str]]:
+        """按索引读取一个样本，并完成必要的数据解码、预处理和标签转换。
+        
+        所属类: ``AnimalDetectionDataset``。
+        
+        Args:
+            idx: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         image_path = self.images[idx]
         image = cv2.imread(str(image_path))
         if image is None:

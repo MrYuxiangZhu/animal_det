@@ -12,6 +12,16 @@ from src.utils.box_ops import nms, xywh_to_xyxy
 
 
 def load_grounding_model(cfg, device, class_names):
+    """加载模型、权重或外部依赖，并返回后续流程需要使用的对象。
+    
+    Args:
+        cfg: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        device: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        class_names: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+    
+    Returns:
+        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+    """
     grounding_cfg = cfg["grounding_dino"]
     tokenizer = SimpleTokenizer(context_length=grounding_cfg["context_length"])
     prompts = [f"a photo of a {name}" for name in class_names]
@@ -24,6 +34,22 @@ def load_grounding_model(cfg, device, class_names):
 
 
 def postprocess_grounding(box_raw, objectness, class_logits, conf_threshold: float, iou_threshold: float, image_size: int, original_shape: Tuple[int, int], scale: float, pad: Tuple[int, int]):
+    """对模型原始输出做后处理，生成可解释的检测框、类别和置信度。
+    
+    Args:
+        box_raw: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        objectness: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        class_logits: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        conf_threshold: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        iou_threshold: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        image_size: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        original_shape: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        scale: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        pad: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+    
+    Returns:
+        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+    """
     boxes = decode_grounding_boxes(box_raw)[0]
     obj = objectness.sigmoid()[0]
     cls_probs = class_logits.sigmoid()[0]
@@ -55,10 +81,32 @@ def postprocess_grounding(box_raw, objectness, class_logits, conf_threshold: flo
 
 
 def build_grounding_frame_inferencer(model, text_tokens, cfg, class_names, device, tracker=None, source=""):
+    """根据配置构建可复用组件，降低入口函数中的业务耦合。
+    
+    Args:
+        model: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        text_tokens: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        cfg: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        class_names: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        device: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        tracker: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        source: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+    
+    Returns:
+        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+    """
     image_size = cfg["data"]["image_size"]
     frame_counter = {"idx": 0}
 
     def infer_frame(frame):
+        """执行单次推理或分类逻辑，输出结构化预测结果。
+        
+        Args:
+            frame: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         inp, scale, pad = letterbox(rgb, image_size)
         tensor = image_to_tensor(inp).unsqueeze(0).to(device)

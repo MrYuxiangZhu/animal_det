@@ -8,6 +8,18 @@ IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".bmp"}
 
 
 def run_image_or_video(source: str, output: str, infer_frame: Callable, logger, progress_interval: int = 50) -> None:
+    """执行一个完整流程步骤，通常包含训练、验证、推理或外部框架调用。
+    
+    Args:
+        source: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        output: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        infer_frame: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        logger: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        progress_interval: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+    
+    Returns:
+        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+    """
     Path(output).parent.mkdir(parents=True, exist_ok=True)
     suffix = Path(source).suffix.lower()
     if suffix in IMAGE_SUFFIXES:

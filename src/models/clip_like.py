@@ -12,6 +12,16 @@ class SimpleTokenizer:
     """面向学习用途的字符级 tokenizer，避免依赖外部 CLIP tokenizer。"""
 
     def __init__(self, context_length: int = 32) -> None:
+        """初始化对象，保存后续训练、推理或数据处理所需的配置和状态。
+        
+        所属类: ``SimpleTokenizer``。
+        
+        Args:
+            context_length: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         vocab_chars = list("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -_.,:/")
         self.stoi = {ch: idx + 2 for idx, ch in enumerate(vocab_chars)}
         self.pad_id = 0
@@ -20,6 +30,16 @@ class SimpleTokenizer:
         self.vocab_size = len(self.stoi) + 2
 
     def encode(self, texts: List[str]) -> torch.Tensor:
+        """封装该模块中的一个可复用业务步骤，供训练、推理或工具流程调用。
+        
+        所属类: ``SimpleTokenizer``。
+        
+        Args:
+            texts: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         tokens = torch.full((len(texts), self.context_length), self.pad_id, dtype=torch.long)
         for i, text in enumerate(texts):
             ids = [self.stoi.get(ch, self.unk_id) for ch in text[: self.context_length]]
@@ -32,9 +52,28 @@ class VisionEncoder(nn.Module):
     """CLIP 风格图像编码器，将图片映射到统一语义向量空间。"""
 
     def __init__(self, embed_dim: int = 256, width_mult: float = 0.75) -> None:
+        """初始化对象，保存后续训练、推理或数据处理所需的配置和状态。
+        
+        所属类: ``VisionEncoder``。
+        
+        Args:
+            embed_dim: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            width_mult: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         super().__init__()
 
         def c(channels: int) -> int:
+            """封装该模块中的一个可复用业务步骤，供训练、推理或工具流程调用。
+            
+            Args:
+                channels: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            
+            Returns:
+                该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+            """
             return max(8, int(channels * width_mult))
 
         self.net = nn.Sequential(
@@ -49,6 +88,16 @@ class VisionEncoder(nn.Module):
         self.proj = nn.Linear(c(512), embed_dim)
 
     def forward(self, images: torch.Tensor) -> torch.Tensor:
+        """定义模块的前向传播逻辑，将输入张量转换为模型输出。
+        
+        所属类: ``VisionEncoder``。
+        
+        Args:
+            images: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         feats = self.net(images).flatten(1)
         return F.normalize(self.proj(feats), dim=-1)
 
@@ -57,6 +106,21 @@ class TextEncoder(nn.Module):
     """CLIP 风格文本编码器，使用 TransformerEncoder 汇聚类别描述。"""
 
     def __init__(self, vocab_size: int, context_length: int = 32, embed_dim: int = 256, width: int = 256, layers: int = 4, heads: int = 4) -> None:
+        """初始化对象，保存后续训练、推理或数据处理所需的配置和状态。
+        
+        所属类: ``TextEncoder``。
+        
+        Args:
+            vocab_size: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            context_length: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            embed_dim: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            width: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            layers: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            heads: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         super().__init__()
         self.context_length = context_length
         self.token_embedding = nn.Embedding(vocab_size, width)
@@ -68,6 +132,16 @@ class TextEncoder(nn.Module):
         nn.init.normal_(self.pos_embedding, std=0.01)
 
     def forward(self, tokens: torch.Tensor) -> torch.Tensor:
+        """定义模块的前向传播逻辑，将输入张量转换为模型输出。
+        
+        所属类: ``TextEncoder``。
+        
+        Args:
+            tokens: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         mask = tokens.eq(0)
         x = self.token_embedding(tokens) + self.pos_embedding.unsqueeze(0)
         x = self.transformer(x, src_key_padding_mask=mask)
@@ -80,18 +154,62 @@ class MiniCLIP(nn.Module):
     """从零实现的 CLIP 学习版，训练目标是图像和文本描述的对比对齐。"""
 
     def __init__(self, vocab_size: int, context_length: int = 32, embed_dim: int = 256, width_mult: float = 0.75) -> None:
+        """初始化对象，保存后续训练、推理或数据处理所需的配置和状态。
+        
+        所属类: ``MiniCLIP``。
+        
+        Args:
+            vocab_size: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            context_length: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            embed_dim: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            width_mult: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         super().__init__()
         self.visual = VisionEncoder(embed_dim=embed_dim, width_mult=width_mult)
         self.text = TextEncoder(vocab_size=vocab_size, context_length=context_length, embed_dim=embed_dim)
         self.logit_scale = nn.Parameter(torch.ones([]) * math.log(1 / 0.07))
 
     def encode_image(self, images: torch.Tensor) -> torch.Tensor:
+        """封装该模块中的一个可复用业务步骤，供训练、推理或工具流程调用。
+        
+        所属类: ``MiniCLIP``。
+        
+        Args:
+            images: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         return self.visual(images)
 
     def encode_text(self, tokens: torch.Tensor) -> torch.Tensor:
+        """封装该模块中的一个可复用业务步骤，供训练、推理或工具流程调用。
+        
+        所属类: ``MiniCLIP``。
+        
+        Args:
+            tokens: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         return self.text(tokens)
 
     def forward(self, images: torch.Tensor, tokens: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        """定义模块的前向传播逻辑，将输入张量转换为模型输出。
+        
+        所属类: ``MiniCLIP``。
+        
+        Args:
+            images: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            tokens: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         image_features = self.encode_image(images)
         text_features = self.encode_text(tokens)
         scale = self.logit_scale.exp().clamp(max=100)
@@ -101,6 +219,15 @@ class MiniCLIP(nn.Module):
 
 
 def clip_contrastive_loss(logits_per_image: torch.Tensor, logits_per_text: torch.Tensor) -> torch.Tensor:
+    """封装该模块中的一个可复用业务步骤，供训练、推理或工具流程调用。
+    
+    Args:
+        logits_per_image: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        logits_per_text: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+    
+    Returns:
+        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+    """
     labels = torch.arange(logits_per_image.shape[0], device=logits_per_image.device)
     loss_i = F.cross_entropy(logits_per_image, labels)
     loss_t = F.cross_entropy(logits_per_text, labels)

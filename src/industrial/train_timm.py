@@ -18,6 +18,18 @@ from src.utils.visualization import save_loss_curve
 
 class TimmClassifier(nn.Module):
     def __init__(self, model_name: str, num_classes: int, pretrained: bool) -> None:
+        """初始化对象，保存后续训练、推理或数据处理所需的配置和状态。
+        
+        所属类: ``TimmClassifier``。
+        
+        Args:
+            model_name: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            num_classes: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            pretrained: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         super().__init__()
         require_package("timm", "pip install timm")
         import timm
@@ -25,10 +37,32 @@ class TimmClassifier(nn.Module):
         self.model = timm.create_model(model_name, pretrained=pretrained, num_classes=num_classes)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """定义模块的前向传播逻辑，将输入张量转换为模型输出。
+        
+        所属类: ``TimmClassifier``。
+        
+        Args:
+            x: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         return self.model(x)
 
 
 def run_epoch(model, loader, optimizer, device, train: bool) -> Dict[str, float]:
+    """执行一个完整流程步骤，通常包含训练、验证、推理或外部框架调用。
+    
+    Args:
+        model: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        loader: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        optimizer: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        device: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        train: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+    
+    Returns:
+        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+    """
     model.train(train)
     total_loss = 0.0
     total_acc = 0.0
@@ -51,6 +85,11 @@ def run_epoch(model, loader, optimizer, device, train: bool) -> Dict[str, float]
 
 
 def main() -> None:
+    """命令行入口函数，解析参数、加载配置并调度对应的训练或推理流程。
+    
+    Returns:
+        该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+    """
     parser = argparse.ArgumentParser(description="Train animal classifier with timm backbone")
     parser.add_argument("--config", default="configs/default.yaml")
     args = parser.parse_args()

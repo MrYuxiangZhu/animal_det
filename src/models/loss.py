@@ -11,12 +11,34 @@ class DetectionLoss(nn.Module):
     """YOLO 风格检测损失，包含框回归、置信度和多标签类别 BCE。"""
 
     def __init__(self, anchors: List[List[float]], num_classes: int) -> None:
+        """初始化对象，保存后续训练、推理或数据处理所需的配置和状态。
+        
+        所属类: ``DetectionLoss``。
+        
+        Args:
+            anchors: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            num_classes: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         super().__init__()
         self.register_buffer("anchors", torch.tensor(anchors, dtype=torch.float32))
         self.num_classes = num_classes
         self.bce = nn.BCEWithLogitsLoss(reduction="none")
 
     def build_targets(self, preds: torch.Tensor, targets: List[torch.Tensor]) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+        """根据配置构建可复用组件，降低入口函数中的业务耦合。
+        
+        所属类: ``DetectionLoss``。
+        
+        Args:
+            preds: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            targets: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         b, a, h, w, _ = preds.shape
         device = preds.device
         obj_target = torch.zeros((b, a, h, w), device=device)
@@ -47,6 +69,17 @@ class DetectionLoss(nn.Module):
         return obj_target, box_target, cls_target, positive
 
     def forward(self, preds: torch.Tensor, targets: List[torch.Tensor]) -> Tuple[torch.Tensor, Dict[str, float]]:
+        """定义模块的前向传播逻辑，将输入张量转换为模型输出。
+        
+        所属类: ``DetectionLoss``。
+        
+        Args:
+            preds: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            targets: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         obj_target, box_target, cls_target, positive = self.build_targets(preds, targets)
         b, a, h, w, _ = preds.shape
         device = preds.device

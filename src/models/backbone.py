@@ -6,6 +6,19 @@ class ConvBNAct(nn.Module):
     """卷积、批归一化和 SiLU 激活的基础模块。"""
 
     def __init__(self, in_channels: int, out_channels: int, kernel_size: int = 3, stride: int = 1) -> None:
+        """初始化对象，保存后续训练、推理或数据处理所需的配置和状态。
+        
+        所属类: ``ConvBNAct``。
+        
+        Args:
+            in_channels: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            out_channels: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            kernel_size: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            stride: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         super().__init__()
         padding = kernel_size // 2
         self.block = nn.Sequential(
@@ -15,6 +28,16 @@ class ConvBNAct(nn.Module):
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """定义模块的前向传播逻辑，将输入张量转换为模型输出。
+        
+        所属类: ``ConvBNAct``。
+        
+        Args:
+            x: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         return self.block(x)
 
 
@@ -22,12 +45,32 @@ class ResidualBlock(nn.Module):
     """轻量残差块，用于增强特征表达并缓解深层网络梯度问题。"""
 
     def __init__(self, channels: int) -> None:
+        """初始化对象，保存后续训练、推理或数据处理所需的配置和状态。
+        
+        所属类: ``ResidualBlock``。
+        
+        Args:
+            channels: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         super().__init__()
         hidden = max(channels // 2, 8)
         self.conv1 = ConvBNAct(channels, hidden, kernel_size=1)
         self.conv2 = ConvBNAct(hidden, channels, kernel_size=3)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """定义模块的前向传播逻辑，将输入张量转换为模型输出。
+        
+        所属类: ``ResidualBlock``。
+        
+        Args:
+            x: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         return x + self.conv2(self.conv1(x))
 
 
@@ -35,9 +78,27 @@ class TinyBackbone(nn.Module):
     """从零实现的轻量 CNN 主干，输出 13x13 或 26x26 网格特征。"""
 
     def __init__(self, width_mult: float = 0.75) -> None:
+        """初始化对象，保存后续训练、推理或数据处理所需的配置和状态。
+        
+        所属类: ``TinyBackbone``。
+        
+        Args:
+            width_mult: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         super().__init__()
 
         def c(channels: int) -> int:
+            """封装该模块中的一个可复用业务步骤，供训练、推理或工具流程调用。
+            
+            Args:
+                channels: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+            
+            Returns:
+                该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+            """
             return max(8, int(channels * width_mult))
 
         self.layers = nn.Sequential(
@@ -54,4 +115,14 @@ class TinyBackbone(nn.Module):
         self.out_channels = c(512)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """定义模块的前向传播逻辑，将输入张量转换为模型输出。
+        
+        所属类: ``TinyBackbone``。
+        
+        Args:
+            x: 调用方传入的业务参数，具体含义由当前模块配置和上下文决定。
+        
+        Returns:
+            该函数的返回值或副作用由调用场景决定；入口函数通常直接完成流程调度。
+        """
         return self.layers(x)
