@@ -140,28 +140,51 @@ def run_epoch(model, loader, criterion, optimizer, device, train: bool, tracker:
     Returns:
         函数返回处理结果；如果是入口或写文件流程，则主要副作用是启动任务、保存结果或写入日志。
     """
+    # 设置模型为训练模式：启用Dropout、BatchNorm训练行为；传入train=False则切换eval验证模式
     model.train(train)
+    # 累计整个epoch的总损失
     total_loss = 0.0
+    # 累计预测正确的样本总数
     total_correct = 0
+    # 累计参与计算的样本总数量
     total_samples = 0
+    # 标记当前是训练阶段还是验证阶段
     phase = "train" if train else "val"
+    # 训练时启用梯度计算，验证时关闭梯度计算节省显存
     context = torch.enable_grad() if train else torch.no_grad()
+    # 进入梯度上下文环境
     with context:
+        # 遍历dataloader每一个batch，tqdm生成进度条，step从1开始计数
         for step, (images, labels) in enumerate(tqdm(loader, desc=f"openclip_{phase}"), start=1):
+            # 图像张量搬运到GPU/指定计算设备
             images = images.to(device)
+            # 标签张量搬运到GPU/指定计算设备
             labels = labels.to(device)
+            # 模型前向传播，输出原始分类得分logits [batch, num_classes]
             logits = model(images)
+            # 计算当前batch的损失（交叉熵损失）
             loss = criterion(logits, labels)
+            # 仅训练阶段执行反向传播与参数更新
             if train:
+                # 清空优化器历史梯度，set_to_none=True直接释放梯度显存更省内存
                 optimizer.zero_grad(set_to_none=True)
+                # 损失反向传播，计算各参数梯度
                 loss.backward()
+                # 根据梯度更新模型权重参数
                 optimizer.step()
+            # 在类别维度取最大值索引，得到每个样本预测类别
             pred = logits.argmax(dim=1)
+            # 统计当前batch预测正确的样本数量，转为int标量
             correct = int((pred == labels).sum().item())
+            # 累加正确样本数到全局总正确数
             total_correct += correct
+            # loss.detach()切断梯度计算图，cpu()移回CPU；乘以batch样本数，按样本加权累计总损失
             total_loss += float(loss.detach().cpu()) * labels.numel()
+            # 累加当前batch样本数量到总样本数
             total_samples += labels.numel()
+            # 记录单步指标到日志工具：epoch、阶段、步数、单batch损失、单batch准确率
             tracker.log({"epoch": epoch, "phase": phase, "step": step, "loss": float(loss.detach().cpu()), "acc": correct / max(labels.numel(), 1)})
+    # 返回整个epoch平均损失、整体准确率
     return {"total": total_loss / max(total_samples, 1), "acc": total_correct / max(total_samples, 1)}
 
 
