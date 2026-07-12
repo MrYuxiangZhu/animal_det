@@ -24,6 +24,30 @@ def save_loss_curve(history: Dict[str, List[float]], output_path: str) -> None:
     plt.close()
 
 
+def save_bar_chart(values: Dict[str, float], output_path: str, title: str, ylabel: str = "Value") -> None:
+    """保存按类别或按指标展开的柱状图。
+
+    Args:
+        values: 柱状图数据字典，key 是横轴名称，value 是对应数值。
+        output_path: 图片输出路径，函数会自动创建父目录。
+        title: 图表标题，描述当前柱状图展示的性能指标。
+        ylabel: 纵轴名称，例如 F1、Precision 或 Recall。
+    """
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+    names = list(values.keys())
+    scores = list(values.values())
+    plt.figure(figsize=(max(10, len(names) * 0.9), 6))
+    plt.bar(names, scores)
+    plt.ylabel(ylabel)
+    plt.title(title)
+    plt.ylim(0.0, 1.02)
+    plt.xticks(rotation=35, ha="right")
+    plt.grid(True, axis="y", linestyle="--", alpha=0.4)
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=160)
+    plt.close()
+
+
 def save_metric_curves(history: Dict[str, List[float]], output_path: str, title: str = "Training Metrics") -> None:
     """保存除 loss 以外的训练指标曲线。
 

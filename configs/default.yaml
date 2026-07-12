@@ -44,6 +44,10 @@ clip:
   batch_size: 32
   learning_rate: 0.0003
   loss_curve: outputs/clip_loss_curve.png
+  metric_curve: outputs/clip_metric_curve.png
+  class_f1_curve: outputs/clip_class_f1.png
+  class_precision_curve: outputs/clip_class_precision.png
+  class_recall_curve: outputs/clip_class_recall.png
 
 grounding_dino:
   context_length: 32
@@ -107,6 +111,9 @@ openclip:
   learning_rate: 0.001
   loss_curve: outputs/openclip_loss_curve.png
   metric_curve: outputs/openclip_metric_curve.png
+  class_f1_curve: outputs/openclip_class_f1.png
+  class_precision_curve: outputs/openclip_class_precision.png
+  class_recall_curve: outputs/openclip_class_recall.png
 
 superanimal:
   superanimal_name: superanimal_quadruped
