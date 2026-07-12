@@ -14,7 +14,7 @@ from src.trainers.common import select_device, set_seed
 from src.utils.config import load_config
 from src.utils.logger import setup_logger
 from src.utils.tracker import MetricTracker
-from src.utils.visualization import save_loss_curve
+from src.utils.visualization import save_loss_curve, save_metric_curves
 
 
 class OpenCLIPImageDataset(Dataset):
@@ -144,10 +144,13 @@ def run_epoch(model, loader, criterion, optimizer, device, train: bool, tracker:
     model.train(train)
     # 累计整个epoch的总损失
     total_loss = 0.0
-    # 累计预测正确的样本总数
+    num_classes = len(getattr(loader.dataset, "class_names", [])) or int(getattr(model.classifier, "out_features", 0))
     total_correct = 0
-    # 累计参与计算的样本总数量
+    total_top5_correct = 0
     total_samples = 0
+    tp = torch.zeros(num_classes, dtype=torch.long)
+    fp = torch.zeros(num_classes, dtype=torch.long)
+    fn = torch.zeros(num_classes, dtype=torch.long)
     # 标记当前是训练阶段还是验证阶段
     phase = "train" if train else "val"
     # 训练时启用梯度计算，验证时关闭梯度计算节省显存
@@ -172,20 +175,32 @@ def run_epoch(model, loader, criterion, optimizer, device, train: bool, tracker:
                 loss.backward()
                 # 根据梯度更新模型权重参数
                 optimizer.step()
-            # 在类别维度取最大值索引，得到每个样本预测类别
             pred = logits.argmax(dim=1)
-            # 统计当前batch预测正确的样本数量，转为int标量
             correct = int((pred == labels).sum().item())
-            # 累加正确样本数到全局总正确数
+            topk = min(5, logits.shape[1])
+            top5_correct = int((logits.topk(topk, dim=1).indices == labels.view(-1, 1)).any(dim=1).sum().item())
             total_correct += correct
+            total_top5_correct += top5_correct
+            pred_cpu = pred.detach().cpu()
+            labels_cpu = labels.detach().cpu()
+            for cls_id in range(num_classes):
+                cls_pred = pred_cpu == cls_id
+                cls_true = labels_cpu == cls_id
+                tp[cls_id] += int((cls_pred & cls_true).sum().item())
+                fp[cls_id] += int((cls_pred & ~cls_true).sum().item())
+                fn[cls_id] += int((~cls_pred & cls_true).sum().item())
             # loss.detach()切断梯度计算图，cpu()移回CPU；乘以batch样本数，按样本加权累计总损失
             total_loss += float(loss.detach().cpu()) * labels.numel()
             # 累加当前batch样本数量到总样本数
             total_samples += labels.numel()
-            # 记录单步指标到日志工具：epoch、阶段、步数、单batch损失、单batch准确率
-            tracker.log({"epoch": epoch, "phase": phase, "step": step, "loss": float(loss.detach().cpu()), "acc": correct / max(labels.numel(), 1)})
-    # 返回整个epoch平均损失、整体准确率
-    return {"total": total_loss / max(total_samples, 1), "acc": total_correct / max(total_samples, 1)}
+            tracker.log({"epoch": epoch, "phase": phase, "step": step, "loss": float(loss.detach().cpu()), "acc": correct / max(labels.numel(), 1), "top5_acc": top5_correct / max(labels.numel(), 1), "lr": optimizer.param_groups[0]["lr"]})
+    precision_per_class = tp.float() / (tp + fp).clamp(min=1).float()
+    recall_per_class = tp.float() / (tp + fn).clamp(min=1).float()
+    f1_per_class = 2 * precision_per_class * recall_per_class / (precision_per_class + recall_per_class).clamp(min=1e-8)
+    macro_precision = float(precision_per_class.mean().item())
+    macro_recall = float(recall_per_class.mean().item())
+    macro_f1 = float(f1_per_class.mean().item())
+    return {"total": total_loss / max(total_samples, 1), "acc": total_correct / max(total_samples, 1), "top5_acc": total_top5_correct / max(total_samples, 1), "macro_precision": macro_precision, "macro_recall": macro_recall, "macro_f1": macro_f1}
 
 
 def main() -> None:
@@ -220,17 +235,25 @@ def main() -> None:
     criterion = nn.CrossEntropyLoss()
     ckpt_dir = Path(cfg["project"]["output_dir"]) / "checkpoints" / "openclip"
     ckpt_dir.mkdir(parents=True, exist_ok=True)
-    history: Dict[str, List[float]] = {"train_total": [], "val_total": []}
+    loss_history: Dict[str, List[float]] = {"train_loss": [], "val_loss": []}
+    metric_history: Dict[str, List[float]] = {"train_acc": [], "val_acc": [], "train_top5_acc": [], "val_top5_acc": [], "train_macro_f1": [], "val_macro_f1": [], "train_macro_precision": [], "val_macro_precision": [], "train_macro_recall": [], "val_macro_recall": []}
     best_val = float("inf")
 
     for epoch in range(1, openclip_cfg["epochs"] + 1):
         train_metrics = run_epoch(model, train_loader, criterion, optimizer, device, True, tracker, epoch)
         val_metrics = run_epoch(model, val_loader, criterion, optimizer, device, False, tracker, epoch)
-        history["train_total"].append(train_metrics["total"])
-        history["val_total"].append(val_metrics["total"])
-        save_loss_curve(history, openclip_cfg["loss_curve"])
-        tracker.log({"epoch": epoch, "phase": "epoch", "train_loss": train_metrics["total"], "train_acc": train_metrics["acc"], "val_loss": val_metrics["total"], "val_acc": val_metrics["acc"]})
-        logger.info("Epoch %03d | train loss %.4f acc %.4f | val loss %.4f acc %.4f", epoch, train_metrics["total"], train_metrics["acc"], val_metrics["total"], val_metrics["acc"])
+        loss_history["train_loss"].append(train_metrics["total"])
+        loss_history["val_loss"].append(val_metrics["total"])
+        for prefix, metrics in (("train", train_metrics), ("val", val_metrics)):
+            metric_history[f"{prefix}_acc"].append(metrics["acc"])
+            metric_history[f"{prefix}_top5_acc"].append(metrics["top5_acc"])
+            metric_history[f"{prefix}_macro_f1"].append(metrics["macro_f1"])
+            metric_history[f"{prefix}_macro_precision"].append(metrics["macro_precision"])
+            metric_history[f"{prefix}_macro_recall"].append(metrics["macro_recall"])
+        save_loss_curve(loss_history, openclip_cfg["loss_curve"])
+        save_metric_curves(metric_history, openclip_cfg.get("metric_curve", "outputs/openclip_metric_curve.png"), "OpenCLIP Classification Metrics")
+        tracker.log({"epoch": epoch, "phase": "epoch", "train_loss": train_metrics["total"], "train_acc": train_metrics["acc"], "train_top5_acc": train_metrics["top5_acc"], "train_macro_precision": train_metrics["macro_precision"], "train_macro_recall": train_metrics["macro_recall"], "train_macro_f1": train_metrics["macro_f1"], "val_loss": val_metrics["total"], "val_acc": val_metrics["acc"], "val_top5_acc": val_metrics["top5_acc"], "val_macro_precision": val_metrics["macro_precision"], "val_macro_recall": val_metrics["macro_recall"], "val_macro_f1": val_metrics["macro_f1"], "lr": optimizer.param_groups[0]["lr"]})
+        logger.info("Epoch %03d | train loss %.4f acc %.4f top5 %.4f f1 %.4f | val loss %.4f acc %.4f top5 %.4f f1 %.4f", epoch, train_metrics["total"], train_metrics["acc"], train_metrics["top5_acc"], train_metrics["macro_f1"], val_metrics["total"], val_metrics["acc"], val_metrics["top5_acc"], val_metrics["macro_f1"])
         ckpt = {"epoch": epoch, "model": model.classifier.state_dict(), "class_names": class_names, "embed_dim": embed_dim, "config": cfg}
         if val_metrics["total"] < best_val:
             best_val = val_metrics["total"]
