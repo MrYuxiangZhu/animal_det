@@ -24,6 +24,9 @@ case "${MODEL}" in
   timm)
     python -m src.trainers.timm --config "${CONFIG}"
     ;;
+  openclip)
+    python -m src.trainers.openclip --config "${CONFIG}"
+    ;;
   mmdetection)
     python -m src.trainers.mmdetection --config "${CONFIG}"
     ;;

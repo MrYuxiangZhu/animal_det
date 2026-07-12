@@ -93,10 +93,16 @@ detectron2:
   run_name: animal_detectron2
 
 openclip:
+  data_root: data/animal_classification
   model_name: ViT-B-32
   pretrained: laion2b_s34b_b79k
   prompt_template: "a photo of a {name}, a wild animal"
   topk: 5
+  freeze_encoder: true
+  epochs: 20
+  batch_size: 16
+  learning_rate: 0.001
+  loss_curve: outputs/openclip_loss_curve.png
 
 superanimal:
   superanimal_name: superanimal_quadruped
