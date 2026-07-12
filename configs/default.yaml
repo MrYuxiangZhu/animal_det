@@ -106,7 +106,7 @@ openclip:
   topk: 5
   freeze_encoder: true
   epochs: 20
-  batch_size: 16
+  batch_size: 32
   num_workers: 0
   learning_rate: 0.001
   loss_curve: outputs/openclip_loss_curve.png
