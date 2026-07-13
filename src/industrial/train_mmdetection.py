@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
 
+from src.trainers.common import create_train_output_dir
 from src.utils.config import load_config
 from src.utils.industrial import python_executable, require_package, run_command
 from src.utils.logger import setup_logger
@@ -19,8 +20,8 @@ def main() -> None:
     logger = setup_logger("train_mmdetection", cfg["project"]["log_dir"])
     mm_cfg = cfg["mmdetection"]
     require_package("mmdet", "pip install -U openmim && mim install mmengine mmcv mmdet")
-    work_dir = Path(cfg["project"]["output_dir"]) / "mmdetection" / mm_cfg["run_name"]
-    work_dir.mkdir(parents=True, exist_ok=True)
+    work_dir = create_train_output_dir(cfg["project"]["output_dir"], "mmdetection")
+    logger.info("本次训练输出目录: %s", work_dir)
     cmd = [python_executable(), "-m", "mmdet.tools.train", mm_cfg["config"], "--work-dir", str(work_dir)]
     logger.info("启动 MMDetection 训练: %s", " ".join(cmd))
     run_command(cmd)

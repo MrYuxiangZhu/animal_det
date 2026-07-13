@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 from src.data.classification_dataset import AnimalClassificationDataset
 from src.models.clip_like import MiniCLIP, SimpleTokenizer, clip_contrastive_loss
-from src.trainers.common import select_device, set_seed
+from src.trainers.common import create_train_output_dir, select_device, set_seed
 from src.utils.config import load_config
 from src.utils.logger import setup_logger
 from src.utils.metrics import classification_metric_history, classification_stats_from_counts, log_classification_epoch, log_per_class_metrics, update_classification_history
@@ -109,6 +109,8 @@ def main() -> None:
     set_seed(cfg["project"]["seed"])
     logger = setup_logger("train_clip", cfg["project"]["log_dir"])
     tracker = MetricTracker(cfg["project"]["log_dir"], "train_clip")
+    run_dir = create_train_output_dir(cfg["project"]["output_dir"], "clip")
+    logger.info("本次训练输出目录: %s", run_dir)
     device = select_device(cfg["train"]["device"])
     class_names = cfg["data"]["class_names"]
     clip_cfg = cfg["clip"]
@@ -121,7 +123,7 @@ def main() -> None:
     tokenizer = SimpleTokenizer(context_length=clip_cfg["context_length"])
     model = MiniCLIP(tokenizer.vocab_size, clip_cfg["context_length"], clip_cfg["embed_dim"], clip_cfg["width_mult"]).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=clip_cfg["learning_rate"], weight_decay=cfg["train"]["weight_decay"])
-    ckpt_dir = Path(cfg["project"]["output_dir"]) / "checkpoints" / "clip"
+    ckpt_dir = run_dir / "checkpoints"
     ckpt_dir.mkdir(parents=True, exist_ok=True)
     best_val = float("inf")
     loss_history: Dict[str, List[float]] = {"train_loss": [], "val_loss": []}
@@ -131,14 +133,14 @@ def main() -> None:
         train_loss = run_epoch(model, tokenizer, train_loader, class_names, optimizer, device, True, tracker, epoch)
         val_loss = run_epoch(model, tokenizer, val_loader, class_names, optimizer, device, False, tracker, epoch)
         update_classification_history(loss_history, metric_history, train_loss, val_loss)
-        save_loss_curve(loss_history, clip_cfg["loss_curve"])
-        save_metric_curves(metric_history, clip_cfg.get("metric_curve", "outputs/clip_metric_curve.png"), "MiniCLIP Classification Metrics")
+        save_loss_curve(loss_history, str(run_dir / "clip_loss_curve.png"))
+        save_metric_curves(metric_history, str(run_dir / "clip_metric_curve.png"), "MiniCLIP Classification Metrics")
         tracker.log({"epoch": epoch, "phase": "epoch", "train_loss": train_loss["total"], "train_acc": train_loss["acc"], "train_top5_acc": train_loss["top5_acc"], "train_macro_precision": train_loss["macro_precision"], "train_macro_recall": train_loss["macro_recall"], "train_macro_f1": train_loss["macro_f1"], "val_loss": val_loss["total"], "val_acc": val_loss["acc"], "val_top5_acc": val_loss["top5_acc"], "val_macro_precision": val_loss["macro_precision"], "val_macro_recall": val_loss["macro_recall"], "val_macro_f1": val_loss["macro_f1"], "lr": optimizer.param_groups[0]["lr"]})
         log_classification_epoch(logger, epoch, train_loss, val_loss, optimizer.param_groups[0]["lr"])
         log_per_class_metrics(logger, epoch, class_names, val_loss, "val")
-        save_bar_chart({name: float(val_loss["f1_per_class"][idx]) for idx, name in enumerate(class_names)}, clip_cfg.get("class_f1_curve", "outputs/clip_class_f1.png"), "MiniCLIP Val F1 Per Class", "F1")
-        save_bar_chart({name: float(val_loss["precision_per_class"][idx]) for idx, name in enumerate(class_names)}, clip_cfg.get("class_precision_curve", "outputs/clip_class_precision.png"), "MiniCLIP Val Precision Per Class", "Precision")
-        save_bar_chart({name: float(val_loss["recall_per_class"][idx]) for idx, name in enumerate(class_names)}, clip_cfg.get("class_recall_curve", "outputs/clip_class_recall.png"), "MiniCLIP Val Recall Per Class", "Recall")
+        save_bar_chart({name: float(val_loss["f1_per_class"][idx]) for idx, name in enumerate(class_names)}, str(run_dir / "clip_class_f1.png"), "MiniCLIP Val F1 Per Class", "F1")
+        save_bar_chart({name: float(val_loss["precision_per_class"][idx]) for idx, name in enumerate(class_names)}, str(run_dir / "clip_class_precision.png"), "MiniCLIP Val Precision Per Class", "Precision")
+        save_bar_chart({name: float(val_loss["recall_per_class"][idx]) for idx, name in enumerate(class_names)}, str(run_dir / "clip_class_recall.png"), "MiniCLIP Val Recall Per Class", "Recall")
         ckpt = {"epoch": epoch, "model": model.state_dict(), "tokenizer": {"context_length": tokenizer.context_length}, "class_names": class_names, "config": cfg}
         if val_loss["total"] < best_val:
             best_val = val_loss["total"]

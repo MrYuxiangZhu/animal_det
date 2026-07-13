@@ -10,7 +10,7 @@ from src.data.dataset import AnimalDetectionDataset, detection_collate
 from src.models.clip_like import SimpleTokenizer
 from src.models.grounding_dino_like import GroundingDINOAnimal
 from src.models.grounding_loss import GroundingDetectionLoss
-from src.trainers.common import select_device, set_seed
+from src.trainers.common import create_train_output_dir, select_device, set_seed
 from src.utils.config import load_config
 from src.utils.logger import setup_logger
 from src.utils.visualization import save_loss_curve
@@ -63,6 +63,8 @@ def main() -> None:
     cfg = load_config(args.config)
     set_seed(cfg["project"]["seed"])
     logger = setup_logger("train_grounding_dino", cfg["project"]["log_dir"])
+    run_dir = create_train_output_dir(cfg["project"]["output_dir"], "grounding_dino")
+    logger.info("本次训练输出目录: %s", run_dir)
     device = select_device(cfg["train"]["device"])
     class_names = cfg["data"]["class_names"]
     grounding_cfg = cfg["grounding_dino"]
@@ -78,7 +80,7 @@ def main() -> None:
     model = GroundingDINOAnimal(tokenizer.vocab_size, grounding_cfg["context_length"], len(class_names), grounding_cfg["hidden_dim"], grounding_cfg["width_mult"]).to(device)
     criterion = GroundingDetectionLoss(len(class_names)).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=grounding_cfg["learning_rate"], weight_decay=cfg["train"]["weight_decay"])
-    ckpt_dir = Path(cfg["project"]["output_dir"]) / "checkpoints" / "grounding_dino"
+    ckpt_dir = run_dir / "checkpoints"
     ckpt_dir.mkdir(parents=True, exist_ok=True)
     best_val = float("inf")
     history: Dict[str, List[float]] = {"train_total": [], "val_total": [], "train_box": [], "train_obj": [], "train_cls": []}
@@ -90,7 +92,7 @@ def main() -> None:
             source = train_loss if key.startswith("train") else val_loss
             metric = key.split("_", 1)[1]
             history[key].append(source[metric])
-        save_loss_curve(history, grounding_cfg["loss_curve"])
+        save_loss_curve(history, str(run_dir / "grounding_dino_loss_curve.png"))
         logger.info("Epoch %03d | train total %.4f box %.4f obj %.4f cls %.4f | val total %.4f", epoch, train_loss["total"], train_loss["box"], train_loss["obj"], train_loss["cls"], val_loss["total"])
         ckpt = {"epoch": epoch, "model": model.state_dict(), "class_names": class_names, "tokenizer": {"context_length": tokenizer.context_length}, "config": cfg}
         if val_loss["total"] < best_val:

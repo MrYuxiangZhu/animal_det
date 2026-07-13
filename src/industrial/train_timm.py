@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from src.data.classification_dataset import AnimalClassificationDataset
+from src.trainers.common import create_train_output_dir
 from src.train import select_device, set_seed
 from src.utils.config import load_config
 from src.utils.industrial import require_package
@@ -96,6 +97,8 @@ def main() -> None:
     cfg = load_config(args.config)
     set_seed(cfg["project"]["seed"])
     logger = setup_logger("train_timm", cfg["project"]["log_dir"])
+    run_dir = create_train_output_dir(cfg["project"]["output_dir"], "timm")
+    logger.info("本次训练输出目录: %s", run_dir)
     timm_cfg = cfg["timm"]
     class_names: List[str] = cfg["data"]["class_names"]
     device = select_device(cfg["train"]["device"])
@@ -106,7 +109,7 @@ def main() -> None:
     val_loader = DataLoader(val_set, batch_size=timm_cfg["batch_size"], shuffle=False, num_workers=cfg["data"]["num_workers"], pin_memory=True)
     model = TimmClassifier(timm_cfg["model_name"], len(class_names), timm_cfg["pretrained"]).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=timm_cfg["learning_rate"], weight_decay=cfg["train"]["weight_decay"])
-    ckpt_dir = Path(cfg["project"]["output_dir"]) / "checkpoints" / "timm"
+    ckpt_dir = run_dir / "checkpoints"
     ckpt_dir.mkdir(parents=True, exist_ok=True)
     best_val = float("inf")
     history: Dict[str, List[float]] = {"train_total": [], "val_total": []}
@@ -116,7 +119,7 @@ def main() -> None:
         val_loss = run_epoch(model, val_loader, optimizer, device, False)
         history["train_total"].append(train_loss["total"])
         history["val_total"].append(val_loss["total"])
-        save_loss_curve(history, timm_cfg["loss_curve"])
+        save_loss_curve(history, str(run_dir / "timm_loss_curve.png"))
         logger.info("Epoch %03d | train loss %.4f acc %.4f | val loss %.4f acc %.4f", epoch, train_loss["total"], train_loss["acc"], val_loss["total"], val_loss["acc"])
         if val_loss["total"] < best_val:
             best_val = val_loss["total"]

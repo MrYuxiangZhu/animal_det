@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
 
+from src.trainers.common import create_train_output_dir
 from src.utils.config import load_config
 from src.utils.industrial import require_package
 from src.utils.logger import setup_logger
@@ -37,8 +38,8 @@ def main() -> None:
     train_cfg.SOLVER.MAX_ITER = d2_cfg["max_iter"]
     train_cfg.SOLVER.STEPS = d2_cfg["steps"]
     train_cfg.MODEL.ROI_HEADS.NUM_CLASSES = len(cfg["data"]["class_names"])
-    train_cfg.OUTPUT_DIR = str(Path(cfg["project"]["output_dir"]) / "detectron2" / d2_cfg["run_name"])
-    Path(train_cfg.OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
+    run_dir = create_train_output_dir(cfg["project"]["output_dir"], "detectron2")
+    train_cfg.OUTPUT_DIR = str(run_dir)
     trainer = DefaultTrainer(train_cfg)
     trainer.resume_or_load(resume=False)
     logger.info("启动 Detectron2 训练，输出目录: %s", train_cfg.OUTPUT_DIR)

@@ -1,4 +1,6 @@
 import random
+from datetime import datetime
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -31,3 +33,16 @@ def select_device(name: str) -> torch.device:
     if name == "auto":
         return torch.device("cuda" if torch.cuda.is_available() else "cpu")
     return torch.device(name)
+
+
+def create_train_output_dir(output_root: str, model_name: str) -> Path:
+    """为一次训练创建 outputs 下的独立运行目录。"""
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    safe_name = "".join(ch if ch.isalnum() or ch in {"_", "-"} else "_" for ch in model_name)
+    run_dir = Path(output_root) / f"{timestamp}_{safe_name}"
+    suffix = 1
+    while run_dir.exists():
+        run_dir = Path(output_root) / f"{timestamp}_{safe_name}_{suffix:02d}"
+        suffix += 1
+    run_dir.mkdir(parents=True, exist_ok=True)
+    return run_dir

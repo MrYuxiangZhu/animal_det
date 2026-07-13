@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 from src.data.dataset import AnimalDetectionDataset, detection_collate
 from src.models.detector import AnimalDetector
 from src.models.loss import DetectionLoss
-from src.trainers.common import select_device, set_seed
+from src.trainers.common import create_train_output_dir, select_device, set_seed
 from src.trainers.detection_engine import run_detection_epoch, save_detection_checkpoint
 from src.utils.config import load_config
 from src.utils.logger import setup_logger
@@ -59,9 +59,11 @@ def main() -> None:
     args = parser.parse_args()
     cfg = load_config(args.config)
     set_seed(cfg["project"]["seed"])
-    ckpt_dir = Path(cfg["project"]["output_dir"]) / "checkpoints"
+    run_dir = create_train_output_dir(cfg["project"]["output_dir"], "tiny_detector")
+    ckpt_dir = run_dir / "checkpoints"
     ckpt_dir.mkdir(parents=True, exist_ok=True)
     logger = setup_logger("train_tiny_detector", cfg["project"]["log_dir"])
+    logger.info("本次训练输出目录: %s", run_dir)
     tracker = MetricTracker(cfg["project"]["log_dir"], "train_tiny_detector")
     device = select_device(cfg["train"]["device"])
     logger.info("使用设备: %s", device)
@@ -89,7 +91,7 @@ def main() -> None:
         history["train_box"].append(train_loss["box"])
         history["train_obj"].append(train_loss["obj"])
         history["train_cls"].append(train_loss["cls"])
-        save_loss_curve(history, cfg["train"]["loss_curve"])
+        save_loss_curve(history, str(run_dir / "tiny_detector_loss_curve.png"))
         is_best = val_loss["total"] < best_val
         if is_best:
             best_val = val_loss["total"]

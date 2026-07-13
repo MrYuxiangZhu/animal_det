@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
 
+from src.trainers.common import create_train_output_dir
 from src.utils.config import load_config
 from src.utils.industrial import python_executable, run_command, write_yolo_data_yaml
 from src.utils.logger import setup_logger
@@ -17,6 +18,8 @@ def main() -> None:
     args = parser.parse_args()
     cfg = load_config(args.config)
     logger = setup_logger("train_yolov5", cfg["project"]["log_dir"])
+    run_dir = create_train_output_dir(cfg["project"]["output_dir"], "yolov5")
+    logger.info("本次训练输出目录: %s", run_dir)
     yolo_cfg = cfg["yolov5"]
     repo = Path(yolo_cfg["repo"])
     if not (repo / "train.py").exists():
@@ -38,9 +41,9 @@ def main() -> None:
         "--weights",
         yolo_cfg["weights"],
         "--project",
-        str(Path.cwd() / cfg["project"]["output_dir"] / "yolov5"),
+        str(Path.cwd() / run_dir.parent),
         "--name",
-        yolo_cfg["run_name"],
+        run_dir.name,
     ]
     logger.info("启动 YOLOv5 训练: %s", " ".join(cmd))
     run_command(cmd, cwd=str(repo))

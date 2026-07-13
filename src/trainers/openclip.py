@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 from src.data.classification_dataset import AnimalClassificationDataset
 from src.specialized.openclip_adapter import load_openclip_model
-from src.trainers.common import select_device, set_seed
+from src.trainers.common import create_train_output_dir, select_device, set_seed
 from src.utils.config import load_config
 from src.utils.logger import setup_logger
 from src.utils.metrics import classification_metric_history, log_classification_epoch, log_per_class_metrics, update_classification_history
@@ -217,6 +217,8 @@ def main() -> None:
     set_seed(cfg["project"]["seed"])
     logger = setup_logger("train_openclip", cfg["project"]["log_dir"])
     tracker = MetricTracker(cfg["project"]["log_dir"], "train_openclip")
+    run_dir = create_train_output_dir(cfg["project"]["output_dir"], "openclip")
+    logger.info("本次训练输出目录: %s", run_dir)
     device = select_device(cfg["train"]["device"])
     class_names = cfg["data"]["class_names"]
     openclip_cfg = cfg["openclip"]
@@ -234,7 +236,7 @@ def main() -> None:
 
     optimizer = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=openclip_cfg["learning_rate"], weight_decay=cfg["train"]["weight_decay"])
     criterion = nn.CrossEntropyLoss()
-    ckpt_dir = Path(cfg["project"]["output_dir"]) / "checkpoints" / "openclip"
+    ckpt_dir = run_dir / "checkpoints"
     ckpt_dir.mkdir(parents=True, exist_ok=True)
     loss_history: Dict[str, List[float]] = {"train_loss": [], "val_loss": []}
     metric_history: Dict[str, List[float]] = classification_metric_history()
@@ -244,8 +246,8 @@ def main() -> None:
         train_metrics = run_epoch(model, train_loader, criterion, optimizer, device, True, tracker, epoch)
         val_metrics = run_epoch(model, val_loader, criterion, optimizer, device, False, tracker, epoch)
         update_classification_history(loss_history, metric_history, train_metrics, val_metrics)
-        save_loss_curve(loss_history, openclip_cfg["loss_curve"])
-        save_metric_curves(metric_history, openclip_cfg.get("metric_curve", "outputs/openclip_metric_curve.png"), "OpenCLIP Classification Metrics")
+        save_loss_curve(loss_history, str(run_dir / "openclip_loss_curve.png"))
+        save_metric_curves(metric_history, str(run_dir / "openclip_metric_curve.png"), "OpenCLIP Classification Metrics")
         epoch_payload = {"epoch": epoch, "phase": "epoch", "train_loss": train_metrics["total"], "train_acc": train_metrics["acc"], "train_top5_acc": train_metrics["top5_acc"], "train_macro_precision": train_metrics["macro_precision"], "train_macro_recall": train_metrics["macro_recall"], "train_macro_f1": train_metrics["macro_f1"], "val_loss": val_metrics["total"], "val_acc": val_metrics["acc"], "val_top5_acc": val_metrics["top5_acc"], "val_macro_precision": val_metrics["macro_precision"], "val_macro_recall": val_metrics["macro_recall"], "val_macro_f1": val_metrics["macro_f1"], "loss_gap_val_minus_train": val_metrics["total"] - train_metrics["total"], "acc_gap_train_minus_val": train_metrics["acc"] - val_metrics["acc"], "lr": optimizer.param_groups[0]["lr"]}
         for idx, class_name in enumerate(class_names):
             epoch_payload[f"val_precision_{class_name}"] = float(val_metrics["precision_per_class"][idx])
@@ -254,9 +256,9 @@ def main() -> None:
         tracker.log(epoch_payload)
         log_classification_epoch(logger, epoch, train_metrics, val_metrics, optimizer.param_groups[0]["lr"])
         log_per_class_metrics(logger, epoch, class_names, val_metrics, "val")
-        save_bar_chart({name: float(val_metrics["f1_per_class"][idx]) for idx, name in enumerate(class_names)}, openclip_cfg.get("class_f1_curve", "outputs/openclip_class_f1.png"), "OpenCLIP Val F1 Per Class", "F1")
-        save_bar_chart({name: float(val_metrics["precision_per_class"][idx]) for idx, name in enumerate(class_names)}, openclip_cfg.get("class_precision_curve", "outputs/openclip_class_precision.png"), "OpenCLIP Val Precision Per Class", "Precision")
-        save_bar_chart({name: float(val_metrics["recall_per_class"][idx]) for idx, name in enumerate(class_names)}, openclip_cfg.get("class_recall_curve", "outputs/openclip_class_recall.png"), "OpenCLIP Val Recall Per Class", "Recall")
+        save_bar_chart({name: float(val_metrics["f1_per_class"][idx]) for idx, name in enumerate(class_names)}, str(run_dir / "openclip_class_f1.png"), "OpenCLIP Val F1 Per Class", "F1")
+        save_bar_chart({name: float(val_metrics["precision_per_class"][idx]) for idx, name in enumerate(class_names)}, str(run_dir / "openclip_class_precision.png"), "OpenCLIP Val Precision Per Class", "Precision")
+        save_bar_chart({name: float(val_metrics["recall_per_class"][idx]) for idx, name in enumerate(class_names)}, str(run_dir / "openclip_class_recall.png"), "OpenCLIP Val Recall Per Class", "Recall")
         ckpt = {"epoch": epoch, "model": model.classifier.state_dict(), "class_names": class_names, "embed_dim": embed_dim, "config": cfg}
         if val_metrics["total"] < best_val:
             best_val = val_metrics["total"]
