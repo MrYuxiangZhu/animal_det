@@ -1,0 +1,148 @@
+project:
+  name: animal_video_detector_coco_animals_10cls
+  seed: 42
+  output_dir: outputs
+  log_dir: logs
+
+data:
+  dataset_name: coco_animals_10cls
+  root: data/coco_animals_10cls/detection
+  train_images: train/images
+  val_images: val/images
+  train_labels: train/labels
+  val_labels: val/labels
+  class_names: [bird, cat, dog, horse, sheep, cow, elephant, bear, zebra, giraffe]
+  image_size: 416
+  num_workers: 4
+
+model:
+  num_classes: 10
+  width_mult: 0.75
+  num_anchors: 3
+  anchors:
+    - [0.08, 0.10]
+    - [0.16, 0.20]
+    - [0.32, 0.40]
+
+train:
+  epochs: 50
+  batch_size: 8
+  learning_rate: 0.001
+  weight_decay: 0.0005
+  checkpoint_interval: 5
+  resume: ""
+  device: auto
+  loss_curve: outputs/loss_curve.png
+
+clip:
+  data_root: data/coco_animals_10cls/recognition
+  image_size: 224
+  context_length: 32
+  embed_dim: 256
+  width_mult: 0.75
+  epochs: 30
+  batch_size: 32
+  learning_rate: 0.0003
+  loss_curve: outputs/clip_loss_curve.png
+  metric_curve: outputs/clip_metric_curve.png
+  class_f1_curve: outputs/clip_class_f1.png
+  class_precision_curve: outputs/clip_class_precision.png
+  class_recall_curve: outputs/clip_class_recall.png
+
+grounding_dino:
+  context_length: 32
+  hidden_dim: 256
+  width_mult: 0.75
+  epochs: 50
+  batch_size: 4
+  learning_rate: 0.0002
+  loss_curve: outputs/grounding_dino_loss_curve.png
+
+yolov5:
+  repo: third_party/yolov5
+  weights: yolov5s.pt
+  infer_weights: outputs/yolov5/animal_yolov5/weights/best.pt
+  data_yaml: configs/yolov5_coco_animals_10cls.yaml
+  epochs: 100
+  batch_size: 16
+  run_name: coco_animals_10cls_yolov5
+
+timm:
+  data_root: data/coco_animals_10cls/recognition
+  model_name: vit_base_patch16_224
+  pretrained: true
+  image_size: 224
+  epochs: 30
+  batch_size: 32
+  learning_rate: 0.0003
+  loss_curve: outputs/timm_loss_curve.png
+
+mmdetection:
+  config: configs/mmdet/animal_faster_rcnn.py
+  checkpoint: outputs/mmdetection/animal_mmdet/best_coco_bbox_mAP_epoch_*.pth
+  device: cuda:0
+  run_name: coco_animals_10cls_mmdet
+
+detectron2:
+  train_json: data/coco_animals_10cls/coco/annotations/instances_train.json
+  val_json: data/coco_animals_10cls/coco/annotations/instances_val.json
+  train_images: data/coco_animals_10cls/coco/train
+  val_images: data/coco_animals_10cls/coco/val
+  model_zoo_config: COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml
+  pretrained: true
+  checkpoint: outputs/detectron2/animal_detectron2/model_final.pth
+  batch_size: 4
+  learning_rate: 0.00025
+  max_iter: 10000
+  steps: [7000, 9000]
+  run_name: coco_animals_10cls_detectron2
+
+openclip:
+  data_root: data/coco_animals_10cls/recognition
+  model_name: ViT-B-32
+  pretrained: ""
+  checkpoint_path: weights/openclip/open_clip_model.safetensors
+  prompt_template: "a photo of a {name}, a wild animal"
+  topk: 5
+  freeze_encoder: true
+  epochs: 20
+  batch_size: 16
+  num_workers: 0
+  learning_rate: 0.001
+  loss_curve: outputs/openclip_loss_curve.png
+  metric_curve: outputs/openclip_metric_curve.png
+  class_f1_curve: outputs/openclip_class_f1.png
+  class_precision_curve: outputs/openclip_class_precision.png
+  class_recall_curve: outputs/openclip_class_recall.png
+
+superanimal:
+  superanimal_name: superanimal_quadruped
+  model_name: hrnet_w32
+  detector_name: fasterrcnn_resnet50_fpn_v2
+  video_adapt: false
+
+pytorch_wildlife:
+  repo: third_party/CameraTraps
+  entry_script: demo/pytorch_wildlife_infer.py
+  detector_weights: weights/md_v5a.0.0.pt
+  classifier_weights: weights/wildlife_vit.pt
+
+birder:
+  repo: third_party/birder
+  entry_script: tools/predict.py
+  model_name: mvit_v2_t
+  checkpoint: ""
+  topk: 5
+
+infer:
+  checkpoint: outputs/checkpoints/best.pt
+  clip_checkpoint: outputs/checkpoints/clip/best.pt
+  grounding_checkpoint: outputs/checkpoints/grounding_dino/best.pt
+  yolov5_checkpoint: outputs/yolov5/animal_yolov5/weights/best.pt
+  timm_checkpoint: outputs/checkpoints/timm/best.pt
+  mmdet_checkpoint: outputs/mmdetection/animal_mmdet/best.pth
+  detectron2_checkpoint: outputs/detectron2/animal_detectron2/model_final.pth
+  source: samples/demo.mp4
+  output: outputs/inference/demo_result.mp4
+  conf_threshold: 0.35
+  iou_threshold: 0.45
