@@ -34,6 +34,23 @@ train:
   device: auto
   loss_curve: outputs/loss_curve.png
 
+tiny_detector:
+  num_classes: 10
+  width_mult: 0.75
+  num_anchors: 3
+  anchors:
+    - [0.08, 0.10]
+    - [0.16, 0.20]
+    - [0.32, 0.40]
+  epochs: 50
+  batch_size: 16
+  learning_rate: 0.001
+  weight_decay: 0.0005
+  checkpoint_interval: 5
+  resume: ""
+  device: auto
+  loss_curve: outputs/tiny_detector_loss_curve.png
+
 clip:
   data_root: data/coco_animals_10cls/recognition
   image_size: 224
