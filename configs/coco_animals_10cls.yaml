@@ -64,7 +64,7 @@ tiny_detector_pro:
     - [[0.100, 0.130], [0.160, 0.200], [0.230, 0.280]]
     - [[0.320, 0.380], [0.450, 0.550], [0.650, 0.750]]
   epochs: 50
-  batch_size: 8
+  batch_size: 16
   learning_rate: 0.0003
   backbone_learning_rate: 0.00003
   weight_decay: 0.001
