@@ -51,6 +51,33 @@ tiny_detector:
   device: auto
   loss_curve: outputs/tiny_detector_loss_curve.png
 
+tiny_detector_pro:
+  backbone_name: mobilenetv3_small_100
+  pretrained: true
+  out_indices: [2, 3, 4]
+  out_channels: 128
+  freeze_backbone_epochs: 3
+  early_stop_patience: 8
+  num_classes: 10
+  anchors:
+    - [[0.025, 0.035], [0.045, 0.060], [0.070, 0.090]]
+    - [[0.100, 0.130], [0.160, 0.200], [0.230, 0.280]]
+    - [[0.320, 0.380], [0.450, 0.550], [0.650, 0.750]]
+  epochs: 50
+  batch_size: 8
+  learning_rate: 0.0003
+  backbone_learning_rate: 0.00003
+  weight_decay: 0.001
+  checkpoint_interval: 1
+  resume: ""
+  device: auto
+  box_gain: 5.0
+  obj_gain: 1.0
+  cls_gain: 1.0
+  focal_alpha: 0.25
+  focal_gamma: 2.0
+  ignore_iou_threshold: 0.5
+
 clip:
   data_root: data/coco_animals_10cls/recognition
   image_size: 224

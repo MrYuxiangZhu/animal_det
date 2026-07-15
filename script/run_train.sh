@@ -12,6 +12,9 @@ case "${MODEL}" in
   tiny_detector)
     python -m src.trainers.tiny_detector --config "${CONFIG}"
     ;;
+  tiny_detector_pro)
+    python -m src.trainers.tiny_detector_pro --config "${CONFIG}"
+    ;;
   clip)
     python -m src.trainers.clip --config "${CONFIG}"
     ;;
@@ -35,7 +38,7 @@ case "${MODEL}" in
     ;;
   *)
     echo "[ERROR] 未知模型: ${MODEL}"
-    echo "可选模型: tiny_detector | clip | grounding_dino | yolov5 | timm | mmdetection | detectron2"
+    echo "可选模型: tiny_detector | tiny_detector_pro | clip | grounding_dino | yolov5 | timm | mmdetection | detectron2"
     exit 1
     ;;
 esac

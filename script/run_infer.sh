@@ -23,6 +23,9 @@ case "${MODEL}" in
   tiny_detector)
     python -m src.inferencers.tiny_detector "${ARGS[@]}"
     ;;
+  tiny_detector_pro)
+    python -m src.inferencers.tiny_detector_pro "${ARGS[@]}"
+    ;;
   clip)
     if [[ -n "${TEXT}" ]]; then
       ARGS+=(--text "${TEXT}")
@@ -64,7 +67,7 @@ case "${MODEL}" in
     ;;
   *)
     echo "[ERROR] 未知模型: ${MODEL}"
-    echo "可选模型: tiny_detector | clip | grounding_dino | yolov5 | timm | mmdetection | detectron2 | openclip | superanimal | pytorch_wildlife | birder"
+    echo "可选模型: tiny_detector | tiny_detector_pro | clip | grounding_dino | yolov5 | timm | mmdetection | detectron2 | openclip | superanimal | pytorch_wildlife | birder"
     exit 1
     ;;
 esac
