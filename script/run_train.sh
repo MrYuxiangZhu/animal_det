@@ -5,6 +5,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 cd "${PROJECT_ROOT}"
 
+# 国内网络环境下使用 HuggingFace 镜像站，避免预训练权重下载失败
+export HF_ENDPOINT="${HF_ENDPOINT:-https://hf-mirror.com}"
+
 MODEL="${1:-tiny_detector}"
 CONFIG="${2:-configs/default.yaml}"
 
